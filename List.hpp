@@ -1,7 +1,12 @@
 #pragma once
 #include <initializer_list>
+#include <cstdint>
 
 namespace StandardTemplateLibrary {
+	constexpr auto operator""_size(unsigned long long Value) {
+		return static_cast<size_t>(Value);
+	}
+
 	template<typename T = auto>
 	struct ListNode final {
 		T *Value = nullptr;
@@ -69,7 +74,7 @@ namespace StandardTemplateLibrary {
 			Position.Get()->Previous = NewNode;
 			++Length;
 			return ListIterator<T>{ NewNode };
-		};
+		}
 	public:
 		List() {
 			Head = new ListNode<T>{};
@@ -78,7 +83,7 @@ namespace StandardTemplateLibrary {
 		}
 		List(std::initializer_list<T> Initialization) :List{} {
 			for (auto &x : Initialization)
-				PushBack(x);
+				*this += x;
 		}
 		List(List &&Object) :List{} {
 			*this = static_cast<List &&>(Object);
@@ -99,7 +104,7 @@ namespace StandardTemplateLibrary {
 			if (this != &Object) {
 				Clear();
 				for (auto &x : Object)
-					PushBack(x);
+					*this += x;
 			}
 			return *this;
 		}
@@ -114,10 +119,39 @@ namespace StandardTemplateLibrary {
 			Insert(begin(), static_cast<T &&>(Object));
 		}
 		auto PushBack(const T &Object) {
-			Insert(end(), Object);
+			*this += Object;
 		}
 		auto PushBack(T &&Object) {
+			*this += static_cast<T &&>(Object);
+		}
+		auto &operator+=(const List &Object) {
+			*this += List{ Object };
+			return *this;
+		}
+		auto &operator+=(List &&Object) {
+			if (Object.Empty() == false) {
+				Head->Previous->Next = Object.Head->Next;
+				Object.Head->Previous->Next = Head;
+				Object.Head->Next = Object.Head;
+				Object.Head->Previous = Object.Head;
+			}
+			return *this;
+		}
+		auto &operator+=(const T &Object) {
+			Insert(end(), Object);
+			return *this;
+		}
+		auto &operator+=(T &&Object) {
 			Insert(end(), static_cast<T &&>(Object));
+			return *this;
+		}
+		auto &operator*=(size_t Value) {
+			if (Value == 0)
+				Clear();
+			else
+				for (auto i = 0_size; i < Value - 1; ++i)
+					*this += List{ *this };
+			return *this;
 		}
 		auto Insert(const ListIterator<T> Position, const T &Object) {
 			return InsertNode(Position, new ListNode<T>{ Object });
@@ -129,7 +163,11 @@ namespace StandardTemplateLibrary {
 			Erase(begin());
 		}
 		auto PopBack() {
+			--*this;
+		}
+		auto &operator--() {
 			Erase(--end());
+			return *this;
 		}
 		auto Erase(const ListIterator<T> Position) {
 			auto Pointer = Position.Get()->Next;
@@ -154,6 +192,60 @@ namespace StandardTemplateLibrary {
 		}
 		auto Empty() const {
 			return Length == 0;
+		}
+		friend auto operator+(List &&ObjectA, List &&ObjectB) {
+			return ObjectA += static_cast<List &&>(ObjectB);
+		}
+		friend auto operator+(List &&ObjectA, const List &ObjectB) {
+			return ObjectA += ObjectB;
+		}
+		friend auto operator+(const List &ObjectA, List &&ObjectB) {
+			return List{ ObjectA } +static_cast<List &&>(ObjectB);
+		}
+		friend auto operator+(const List &ObjectA, const List &ObjectB) {
+			return List{ ObjectA } +List{ ObjectB };
+		}
+		friend auto operator+(List &&Object, T &&Element) {
+			return Object += static_cast<T &&>(Element);
+		}
+		friend auto operator+(T &&Element, List &&Object) {
+			Object.PushFront(static_cast<T &&>(Element));
+			return Object;
+		}
+		friend auto operator+(List &&Object, const T &Element) {
+			return Object += Element;
+		}
+		friend auto operator+(const T &Element, List &&Object) {
+			Object.PushFront(Element);
+			return Object;
+		}
+		friend auto operator+(const List &Object, T &&Element) {
+			return List{ Object } += static_cast<T &&>(Element);
+		}
+		friend auto operator+(T &&Element, const List &Object) {
+			auto TemporaryObject = List{ Object };
+			TemporaryObject.PushFront(static_cast<T &&>(Element));
+			return TemporaryObject;
+		}
+		friend auto operator+(const List &Object, const T &Element) {
+			return List{ Object } += Element;
+		}
+		friend auto operator+(const T &Element, const List &Object) {
+			auto TemporaryObject = List{ Object };
+			TemporaryObject.PushFront(Element);
+			return TemporaryObject;
+		}
+		friend auto operator*(List &&Object, size_t Value) {
+			return Object *= Value;
+		}
+		friend auto operator*(size_t Value, List &&Object) {
+			return Object *= Value;
+		}
+		friend auto operator*(const List &Object, size_t Value) {
+			return List{ Object } *= Value;
+		}
+		friend auto operator*(size_t Value, const List &Object) {
+			return List{ Object } *= Value;
 		}
 	};
 }
