@@ -193,6 +193,32 @@ namespace StandardTemplateLibrary {
 		auto Empty() const {
 			return Length == 0;
 		}
+		auto Sort() {
+			auto TemporaryList = List{};
+			auto Initialize = [&]() {
+				TemporaryList += static_cast<T &&>(*--end());
+				--*this;
+			};
+			auto ActualSort = [&]() {
+				while (!Empty()) {
+					auto i = TemporaryList.begin();
+					while (i != TemporaryList.end())
+						if (*i < *--end())
+							++i;
+						else
+							break;
+					TemporaryList.Insert(i, static_cast<T &&>(*--end()));
+					--*this;
+				}
+			};
+			if (Empty())
+				return;
+			else {
+				Initialize();
+				ActualSort();
+				*this = static_cast<List &&>(TemporaryList);
+			}
+		}
 		friend auto operator+(List &&ObjectA, List &&ObjectB) {
 			return ObjectA += static_cast<List &&>(ObjectB);
 		}
