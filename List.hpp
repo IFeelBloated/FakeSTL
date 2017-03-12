@@ -194,12 +194,16 @@ namespace StandardTemplateLibrary {
 			return Length == 0;
 		}
 		auto Sort() {
-			auto TemporaryList = List{};
-			auto Initialize = [&]() {
-				TemporaryList += static_cast<T &&>(*--end());
-				--*this;
-			};
-			auto ActualSort = [&]() {
+			auto ActualSort = [this]() {
+				auto TemporaryList = List{};
+				auto ShiftLastNodeToTemporaryList = [&](auto Position) {
+					auto LastNode = Head->Previous;
+					LastNode->Previous->Next = Head;
+					Head->Previous = LastNode->Previous;
+					--Length;
+					TemporaryList.InsertNode(Position, LastNode);
+				};
+				ShiftLastNodeToTemporaryList(TemporaryList.begin());
 				while (!Empty()) {
 					auto i = TemporaryList.begin();
 					while (i != TemporaryList.end())
@@ -207,17 +211,14 @@ namespace StandardTemplateLibrary {
 							++i;
 						else
 							break;
-					TemporaryList.Insert(i, static_cast<T &&>(*--end()));
-					--*this;
+					ShiftLastNodeToTemporaryList(i);
 				}
+				*this = static_cast<List &&>(TemporaryList);
 			};
 			if (Empty())
 				return;
-			else {
-				Initialize();
+			else
 				ActualSort();
-				*this = static_cast<List &&>(TemporaryList);
-			}
 		}
 		friend auto operator+(List &&ObjectA, List &&ObjectB) {
 			return ObjectA += static_cast<List &&>(ObjectB);
