@@ -7,7 +7,7 @@ namespace StandardTemplateLibrary {
 		return static_cast<size_t>(Value);
 	}
 
-	template<typename T = auto>
+	template<typename T>
 	struct ListNode final {
 		T *Value = nullptr;
 		ListNode *Next = nullptr;
@@ -28,7 +28,7 @@ namespace StandardTemplateLibrary {
 		}
 	};
 
-	template<typename T = auto>
+	template<typename T>
 	class ListIterator final {
 		ListNode<T> *Pointer = nullptr;
 	public:
@@ -43,6 +43,9 @@ namespace StandardTemplateLibrary {
 		~ListIterator() = default;
 		auto &operator*() const {
 			return *Pointer->Value;
+		}
+		auto operator->() const {
+			return Pointer->Value;
 		}
 		auto &operator++() {
 			Pointer = Pointer->Next;
@@ -63,7 +66,7 @@ namespace StandardTemplateLibrary {
 		}
 	};
 
-	template<typename T = auto>
+	template<typename T>
 	class List final {
 		ListNode<T> *Head = nullptr;
 		size_t Length = 0;
