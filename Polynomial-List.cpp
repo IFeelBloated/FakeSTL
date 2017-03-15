@@ -30,14 +30,6 @@ auto main()->int {
 	auto PolynomialA = Polynomial{ PolynomialTerm{ 1., 0. }, PolynomialTerm{ 1., 1. } };
 	auto PolynomialB = Polynomial{ PolynomialTerm{ 1., 0. }, PolynomialTerm{ 2., 1. }, PolynomialTerm{ 6., 2. } };
 	auto SimplifyPolynomial = [](auto &Object) {
-		auto Cleanup = [&]() {
-			for (auto i = Object.begin(); i != Object.end();) {
-				if (i->Coefficient == 0.)
-					i = Object.Erase(i);
-				else
-					++i;
-			}
-		};
 		auto CombineLikeTerms = [&]() {
 			auto Combine = [&]() {
 				auto GetNext = [](auto Iterator) {
@@ -52,8 +44,16 @@ auto main()->int {
 			Object.Sort();
 			Combine();
 		};
-		Cleanup();
+		auto Cleanup = [&]() {
+			for (auto i = Object.begin(); i != Object.end();) {
+				if (i->Coefficient == 0.)
+					i = Object.Erase(i);
+				else
+					++i;
+			}
+		};
 		CombineLikeTerms();
+		Cleanup();
 	};
 	auto MultiplyPolynomial = [&]() {
 		auto Result = Polynomial{};
