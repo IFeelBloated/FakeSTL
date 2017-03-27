@@ -196,32 +196,66 @@ namespace StandardTemplateLibrary {
 		auto Empty() const {
 			return Length == 0;
 		}
-		auto Sort() {
-			auto ActualSort = [this]() {
-				auto TemporaryList = List{};
-				auto ShiftLastNodeToTemporaryList = [&](auto Position) {
-					auto LastNode = Head->Previous;
-					LastNode->Previous->Next = Head;
-					Head->Previous = LastNode->Previous;
-					--Length;
-					TemporaryList.InsertNode(Position, LastNode);
-				};
-				ShiftLastNodeToTemporaryList(TemporaryList.begin());
-				while (!Empty()) {
-					auto i = TemporaryList.begin();
-					while (i != TemporaryList.end())
-						if (*i < *--end())
-							++i;
-						else
-							break;
-					ShiftLastNodeToTemporaryList(i);
-				}
-				*this = static_cast<List &&>(TemporaryList);
+		auto Merge(List &Object) {
+			auto TemporaryList = List{};
+			auto ShiftFirstNodeToTemporaryList = [&](auto &SourceList) {
+				auto FirstNode = SourceList.Head->Next;
+				SourceList.Head->Next = FirstNode->Next;
+				FirstNode->Next->Previous = SourceList.Head;
+				--SourceList.Length;
+				TemporaryList.InsertNode(TemporaryList.end(), FirstNode);
 			};
-			if (Empty())
-				return;
-			else
-				ActualSort();
+			auto MergeInOrder = [&]() {
+				while (!this->Empty() && !Object.Empty())
+					if (*this->begin() < *Object.begin())
+						ShiftFirstNodeToTemporaryList(*this);
+					else
+						ShiftFirstNodeToTemporaryList(Object);
+			};
+			auto ListCleanup = [&]() {
+				while (!this->Empty())
+					ShiftFirstNodeToTemporaryList(*this);
+				while (!Object.Empty())
+					ShiftFirstNodeToTemporaryList(Object);
+			};
+			if (this != &Object) {
+				MergeInOrder();
+				ListCleanup();
+				*this = static_cast<List &&>(TemporaryList);
+			}
+		}
+		auto Merge(List &&Object) {
+			Merge(Object);
+		}
+		auto Sort() {
+			auto TemporaryListArray = List<List>{};
+			auto Initialize = [&]() {
+				auto WrapFirstNodeAsList = [this]() {
+					auto TemporaryList = List{};
+					auto FirstNode = Head->Next;
+					Head->Next = FirstNode->Next;
+					FirstNode->Next->Previous = Head;
+					--Length;
+					TemporaryList.InsertNode(TemporaryList.end(), FirstNode);
+					return TemporaryList;
+				};
+				while (!Empty())
+					TemporaryListArray += WrapFirstNodeAsList();
+			};
+			auto MergeSort = [&]() {
+				auto EndPosition = TemporaryListArray.Size() % 2 == 0 ? TemporaryListArray.end() : --TemporaryListArray.end();
+				auto GetNext = [](auto Iterator) {
+					return ++Iterator;
+				};
+				for (auto i = TemporaryListArray.begin(); i != EndPosition; i = TemporaryListArray.Erase(GetNext(i)))
+					i->Merge(*GetNext(i));
+			};
+			if (Length > 1) {
+				Initialize();
+				while (TemporaryListArray.Size() > 1)
+					MergeSort();
+				*this = static_cast<List &&>(*TemporaryListArray.begin());
+			}
 		}
 		friend auto operator+(List &&ObjectA, List &&ObjectB) {
 			return ObjectA += static_cast<List &&>(ObjectB);
