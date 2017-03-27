@@ -86,7 +86,6 @@ namespace StandardTemplateLibrary {
 	class BasicString final {
 		T *Pointer = nullptr;
 		size_t Length = 0;
-		static constexpr auto NPOS = static_cast<size_t>(-1);
 		static auto Compare(const BasicString &ObjectA, const BasicString &ObjectB, bool LessThan) {
 			auto ActualCompare = [&](auto Operation) {
 				auto GetMinimum = [](auto x, auto y) {
@@ -107,6 +106,7 @@ namespace StandardTemplateLibrary {
 			});
 		}
 	public:
+		static constexpr auto NPOS = static_cast<size_t>(-1);
 		BasicString() = default;
 		BasicString(size_t Count, T Value) {
 			Pointer = new T[Count + 1];
@@ -183,28 +183,29 @@ namespace StandardTemplateLibrary {
 			auto GetMaximum = [](auto x, auto y) {
 				return x < y ? y : x;
 			};
-			auto ShiftTable = reinterpret_cast<size_t *>(alloca(GetMaximum(Object.Length, 1) * sizeof(size_t)));
+			auto ShiftTable = reinterpret_cast<size_t *>(alloca(GetMaximum(Object.Length, 2) * sizeof(size_t)));
 			auto InitializeShiftTable = [&]() {
-				auto CalculateShiftValue = [&](auto Position) {
-					auto Cursor = Position;
-					ShiftTable[Position] = 0;
-					while (static_cast<long long>(ShiftTable[Cursor - 1]) >= 0)
-						if (Object[Cursor - 1] == Object[ShiftTable[Cursor - 1]]) {
-							++ShiftTable[Position];
-							--Cursor;
-						}
-						else
-							break;
-				};
-				auto OptimizeShiftValue = [&](auto Position) {
-					if (Object[Position] == Object[ShiftTable[Position]])
-						ShiftTable[Position] = ShiftTable[ShiftTable[Position]];
-				};
+				auto Position = 2_size;
+				auto Cursor = 0_size;
 				ShiftTable[0] = NPOS;
-				for (auto i = 1_size; i < Object.Length; ++i) {
-					CalculateShiftValue(i);
-					OptimizeShiftValue(i);
-				}
+				ShiftTable[1] = 0;
+				while (Position < Object.Length)
+					if (Object[Position - 1] == Object[Cursor]) {
+						ShiftTable[Position] = Cursor + 1;
+						++Position;
+						++Cursor;
+					}
+					else if (Cursor > 0)
+						Cursor = ShiftTable[Cursor];
+					else {
+						ShiftTable[Position] = 0;
+						++Position;
+					}
+			};
+			auto OptimizeShiftTable = [&]() {
+				for (auto i = 1_size; i < Object.Length; ++i)
+					if (Object[i] == Object[ShiftTable[i]])
+						ShiftTable[i] = ShiftTable[ShiftTable[i]];
 			};
 			auto ActualFind = [&]() {
 				auto Cursor = 0_size;
@@ -227,6 +228,7 @@ namespace StandardTemplateLibrary {
 					return NPOS;
 			};
 			InitializeShiftTable();
+			OptimizeShiftTable();
 			return ActualFind();
 		}
 		auto &operator[](size_t Position) {
@@ -313,4 +315,3 @@ namespace StandardTemplateLibrary {
 		}
 	}
 }
-
