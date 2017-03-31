@@ -3,8 +3,8 @@
 #include "List.hpp"
 
 struct PolynomialTerm final {
-	double Coefficient = 0.;
-	double Degree = 0.;
+	decltype(0.) Coefficient = 0.;
+	decltype(0.) Degree = 0.;
 	PolynomialTerm(double Coefficient = 0., double Degree = 0.) {
 		this->Coefficient = Coefficient;
 		this->Degree = Degree;
@@ -54,6 +54,7 @@ auto main()->int {
 		};
 		CombineLikeTerms();
 		Cleanup();
+		Object.Reverse();
 	};
 	auto MultiplyPolynomial = [&]() {
 		auto Result = Polynomial{};

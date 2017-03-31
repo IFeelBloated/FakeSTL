@@ -1,12 +1,7 @@
 #pragma once
-#include <initializer_list>
-#include <cstdint>
+#include "Helpers.hpp"
 
 namespace StandardTemplateLibrary {
-	constexpr auto operator""_size(unsigned long long Value) {
-		return static_cast<size_t>(Value);
-	}
-
 	template<typename T>
 	struct ListNode final {
 		T *Value = nullptr;
@@ -30,7 +25,9 @@ namespace StandardTemplateLibrary {
 
 	template<typename T>
 	class ListIterator final {
-		ListNode<T> *Pointer = nullptr;
+		template<typename T>
+		friend class List;
+		mutable ListNode<T> *Pointer = nullptr;
 	public:
 		ListIterator() = delete;
 		ListIterator(ListNode<T> *Item) {
@@ -41,17 +38,23 @@ namespace StandardTemplateLibrary {
 		auto operator=(const ListIterator &)->ListIterator & = default;
 		auto operator=(ListIterator &&)->ListIterator & = default;
 		~ListIterator() = default;
-		auto &operator*() const {
+		auto &operator*() {
 			return *Pointer->Value;
 		}
-		auto operator->() const {
+		const auto &operator*() const {
+			return *Pointer->Value;
+		}
+		auto operator->() {
 			return Pointer->Value;
 		}
-		auto &operator++() {
+		const auto operator->() const {
+			return Pointer->Value;
+		}
+		auto &operator++() const {
 			Pointer = Pointer->Next;
 			return *this;
 		}
-		auto &operator--() {
+		auto &operator--() const {
 			Pointer = Pointer->Previous;
 			return *this;
 		}
@@ -61,20 +64,17 @@ namespace StandardTemplateLibrary {
 		auto operator!=(const ListIterator &Object) const {
 			return Pointer != Object.Pointer;
 		}
-		auto Get() const {
-			return Pointer;
-		}
 	};
 
 	template<typename T>
 	class List final {
 		ListNode<T> *Head = nullptr;
-		size_t Length = 0;
+		decltype(0_size) Length = 0;
 		auto InsertNode(const ListIterator<T> Position, ListNode<T> *NewNode) {
-			NewNode->Next = Position.Get();
-			NewNode->Previous = Position.Get()->Previous;
-			Position.Get()->Previous->Next = NewNode;
-			Position.Get()->Previous = NewNode;
+			NewNode->Next = Position.Pointer;
+			NewNode->Previous = Position.Pointer->Previous;
+			Position.Pointer->Previous->Next = NewNode;
+			Position.Pointer->Previous = NewNode;
 			++Length;
 			return ListIterator<T>{ NewNode };
 		}
@@ -148,14 +148,6 @@ namespace StandardTemplateLibrary {
 			Insert(end(), static_cast<T &&>(Object));
 			return *this;
 		}
-		auto &operator*=(size_t Value) {
-			if (Value == 0)
-				Clear();
-			else
-				for (auto i = 0_size; i < Value - 1; ++i)
-					*this += List{ *this };
-			return *this;
-		}
 		auto Insert(const ListIterator<T> Position, const T &Object) {
 			return InsertNode(Position, new ListNode<T>{ Object });
 		}
@@ -173,10 +165,10 @@ namespace StandardTemplateLibrary {
 			return *this;
 		}
 		auto Erase(const ListIterator<T> Position) {
-			auto Pointer = Position.Get()->Next;
-			Position.Get()->Previous->Next = Position.Get()->Next;
-			Position.Get()->Next->Previous = Position.Get()->Previous;
-			delete Position.Get();
+			auto Pointer = Position.Pointer->Next;
+			Position.Pointer->Previous->Next = Position.Pointer->Next;
+			Position.Pointer->Next->Previous = Position.Pointer->Previous;
+			delete Position.Pointer;
 			--Length;
 			return ListIterator<T>{ Pointer };
 		}
@@ -184,10 +176,16 @@ namespace StandardTemplateLibrary {
 			for (auto i = begin(); i != end(); ++i)
 				Erase(i);
 		}
-		auto begin() const {
+		auto begin() {
 			return ListIterator<T>{ Head->Next };
 		}
-		auto end() const {
+		const auto begin() const {
+			return ListIterator<T>{ Head->Next };
+		}
+		auto end() {
+			return ListIterator<T>{ Head };
+		}
+		const auto end() const {
 			return ListIterator<T>{ Head };
 		}
 		auto Size() const {
@@ -257,6 +255,21 @@ namespace StandardTemplateLibrary {
 				*this = static_cast<List &&>(*TemporaryListArray.begin());
 			}
 		}
+		auto Reverse() {
+			auto TemporaryList = List{};
+			auto ShiftLastNodeToTemporaryList = [&]() {
+				auto LastNode = Head->Previous;
+				LastNode->Previous->Next = Head;
+				Head->Previous = LastNode->Previous;
+				--Length;
+				TemporaryList.InsertNode(TemporaryList.end(), LastNode);
+			};
+			if (Length > 1) {
+				while (!Empty())
+					ShiftLastNodeToTemporaryList();
+				*this = static_cast<List &&>(TemporaryList);
+			}
+		}
 		friend auto operator+(List &&ObjectA, List &&ObjectB) {
 			return ObjectA += static_cast<List &&>(ObjectB);
 		}
@@ -264,10 +277,10 @@ namespace StandardTemplateLibrary {
 			return ObjectA += ObjectB;
 		}
 		friend auto operator+(const List &ObjectA, List &&ObjectB) {
-			return List{ ObjectA } +static_cast<List &&>(ObjectB);
+			return List{ ObjectA } + static_cast<List &&>(ObjectB);
 		}
 		friend auto operator+(const List &ObjectA, const List &ObjectB) {
-			return List{ ObjectA } +List{ ObjectB };
+			return List{ ObjectA } + List{ ObjectB };
 		}
 		friend auto operator+(List &&Object, T &&Element) {
 			return Object += static_cast<T &&>(Element);
@@ -298,18 +311,6 @@ namespace StandardTemplateLibrary {
 			auto TemporaryObject = List{ Object };
 			TemporaryObject.PushFront(Element);
 			return TemporaryObject;
-		}
-		friend auto operator*(List &&Object, size_t Value) {
-			return Object *= Value;
-		}
-		friend auto operator*(size_t Value, List &&Object) {
-			return Object *= Value;
-		}
-		friend auto operator*(const List &Object, size_t Value) {
-			return List{ Object } *= Value;
-		}
-		friend auto operator*(size_t Value, const List &Object) {
-			return List{ Object } *= Value;
 		}
 	};
 }
