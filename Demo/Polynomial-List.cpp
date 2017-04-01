@@ -32,25 +32,28 @@ auto main()->int {
 	auto SimplifyPolynomial = [](auto &Object) {
 		auto CombineLikeTerms = [&]() {
 			auto Combine = [&]() {
+				auto Cursor = Object.begin();
 				auto GetNext = [](auto Iterator) {
 					return ++Iterator;
 				};
-				for (auto i = Object.begin(); i != Object.end(); ++i)
-					for (auto j = GetNext(i); j != Object.end() && i->Degree == j->Degree;) {
-						i->Coefficient += j->Coefficient;
-						j = Object.Erase(j);
+				while (GetNext(Cursor) != Object.end())
+					if (Cursor->Degree == GetNext(Cursor)->Degree) {
+						Cursor->Coefficient += GetNext(Cursor)->Coefficient;
+						Object.Erase(GetNext(Cursor));
 					}
+					else
+						++Cursor;
 			};
 			Object.Sort();
 			Combine();
 		};
 		auto Cleanup = [&]() {
-			for (auto i = Object.begin(); i != Object.end();) {
-				if (i->Coefficient == 0.)
-					i = Object.Erase(i);
+			auto Cursor = Object.begin();
+			while (Cursor != Object.end())
+				if (Cursor->Coefficient == 0.)
+					Cursor = Object.Erase(Cursor);
 				else
-					++i;
-			}
+					++Cursor;
 		};
 		CombineLikeTerms();
 		Cleanup();
