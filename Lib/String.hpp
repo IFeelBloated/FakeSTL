@@ -1,23 +1,10 @@
 #pragma once
-#include <new>
-#include <iostream>
-#include <cstring>
-#include <cstdint>
-
-#if defined(_MSC_VER)
-#include <malloc.h>
-#elif defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
-#include <alloca.h>
-#endif
+#include "Helpers.hpp"
 
 namespace StandardTemplateLibrary {
-	constexpr auto operator""_size(unsigned long long Value) {
-		return static_cast<size_t>(Value);
-	}
-
 	template<typename T>
 	class BasicStringIterator final {
-		T *Pointer = nullptr;
+		mutable T *Pointer = nullptr;
 	public:
 		BasicStringIterator() = delete;
 		BasicStringIterator(T *Item) {
@@ -28,25 +15,31 @@ namespace StandardTemplateLibrary {
 		auto operator=(const BasicStringIterator &)->BasicStringIterator & = default;
 		auto operator=(BasicStringIterator &&)->BasicStringIterator & = default;
 		~BasicStringIterator() = default;
-		auto &operator*() const {
+		auto &operator*() {
 			return *Pointer;
 		}
-		auto &operator[](intptr_t Position) const {
+		const auto &operator*() const {
+			return *Pointer;
+		}
+		auto &operator[](ptrdiff_t Position) {
 			return Pointer[Position];
 		}
-		auto &operator+=(intptr_t Value) {
+		const auto &operator[](ptrdiff_t Position) const {
+			return Pointer[Position];
+		}
+		auto &operator+=(ptrdiff_t Value) const {
 			Pointer += Value;
 			return *this;
 		}
-		auto &operator-=(intptr_t Value) {
+		auto &operator-=(ptrdiff_t Value) const {
 			Pointer -= Value;
 			return *this;
 		}
-		auto &operator++() {
+		auto &operator++() const {
 			++Pointer;
 			return *this;
 		}
-		auto &operator--() {
+		auto &operator--() const {
 			--Pointer;
 			return *this;
 		}
@@ -56,38 +49,35 @@ namespace StandardTemplateLibrary {
 		auto operator!=(const BasicStringIterator &Object) const {
 			return Pointer != Object.Pointer;
 		}
-		friend auto operator-(const BasicStringIterator &Object, intptr_t Value) {
-			auto TemporaryObject = BasicStringIterator{ Object };
-			return  TemporaryObject -= Value;
+		friend auto operator-(const BasicStringIterator &Object, ptrdiff_t Value) {
+			return  BasicStringIterator{ Object } -= Value;
 		}
-		friend auto operator-(BasicStringIterator &&Object, intptr_t Value) {
+		friend auto operator-(BasicStringIterator &&Object, ptrdiff_t Value) {
 			return Object -= Value;
 		}
-		friend auto operator+(const BasicStringIterator &Object, intptr_t Value) {
-			auto TemporaryObject = BasicStringIterator{ Object };
-			return  TemporaryObject += Value;
+		friend auto operator+(const BasicStringIterator &Object, ptrdiff_t Value) {
+			return  BasicStringIterator{ Object } += Value;
 		}
-		friend auto operator+(BasicStringIterator &&Object, intptr_t Value) {
+		friend auto operator+(BasicStringIterator &&Object, ptrdiff_t Value) {
 			return Object += Value;
 		}
-		friend auto operator+(intptr_t Value, const BasicStringIterator &Object) {
-			auto TemporaryObject = BasicStringIterator{ Object };
-			return  TemporaryObject += Value;
+		friend auto operator+(ptrdiff_t Value, const BasicStringIterator &Object) {
+			return  BasicStringIterator{ Object } += Value;
 		}
-		friend auto operator+(intptr_t Value, BasicStringIterator &&Object) {
+		friend auto operator+(ptrdiff_t Value, BasicStringIterator &&Object) {
 			return Object += Value;
 		}
 		friend auto operator-(const BasicStringIterator &ObjectA, const BasicStringIterator &ObjectB) {
-			return reinterpret_cast<intptr_t>(ObjectA.Pointer) - reinterpret_cast<intptr_t>(ObjectB.Pointer);
+			return reinterpret_cast<ptrdiff_t>(ObjectA.Pointer) - reinterpret_cast<ptrdiff_t>(ObjectB.Pointer);
 		}
 	};
 
 	template<typename T>
 	class BasicString final {
 		T *Pointer = nullptr;
-		size_t Length = 0;
+		decltype(0_size) Length = 0;
 		static auto Compare(const BasicString &ObjectA, const BasicString &ObjectB, bool LessThan) {
-			auto ActualCompare = [&](auto Operation) {
+			auto ActualCompare = [&](auto &&Operation) {
 				auto GetMinimum = [](auto x, auto y) {
 					return x > y ? y : x;
 				};
@@ -159,10 +149,16 @@ namespace StandardTemplateLibrary {
 		auto Empty() const {
 			return Length == 0;
 		}
-		auto begin() const {
+		auto begin() {
 			return BasicStringIterator<T>{ Pointer };
 		}
-		auto end() const {
+		const auto begin() const {
+			return BasicStringIterator<T>{ Pointer };
+		}
+		auto end() {
+			return BasicStringIterator<T>{ Pointer + Length };
+		}
+		const auto end() const {
 			return BasicStringIterator<T>{ Pointer + Length };
 		}
 		auto Size() const {
@@ -187,20 +183,27 @@ namespace StandardTemplateLibrary {
 			auto InitializeShiftTable = [&]() {
 				auto Position = 2_size;
 				auto Cursor = 0_size;
+				auto RecordCursorAndMoveOn = [&]() {
+					ShiftTable[Position] = Cursor + 1;
+					++Position;
+					++Cursor;
+				};
+				auto SkipAndMoveOn = [&]() {
+					ShiftTable[Position] = 0;
+					++Position;
+				};
+				auto RelocateCursor = [&]() {
+					Cursor = ShiftTable[Cursor];
+				};
 				ShiftTable[0] = NPOS;
 				ShiftTable[1] = 0;
 				while (Position < Object.Length)
-					if (Object[Position - 1] == Object[Cursor]) {
-						ShiftTable[Position] = Cursor + 1;
-						++Position;
-						++Cursor;
-					}
+					if (Object[Position - 1] == Object[Cursor])
+						RecordCursorAndMoveOn();
 					else if (Cursor > 0)
-						Cursor = ShiftTable[Cursor];
-					else {
-						ShiftTable[Position] = 0;
-						++Position;
-					}
+						RelocateCursor();
+					else
+						SkipAndMoveOn();
 			};
 			auto OptimizeShiftTable = [&]() {
 				for (auto i = 1_size; i < Object.Length; ++i)
@@ -210,18 +213,24 @@ namespace StandardTemplateLibrary {
 			auto ActualFind = [&]() {
 				auto Cursor = 0_size;
 				auto &Self = *this;
-				while (Cursor < Object.Length && Position < Length)
-					if (Self[Position] == Object[Cursor]) {
+				auto MoveOn = [&]() {
+					++Position;
+					++Cursor;
+				};
+				auto RelocateCursor = [&]() {
+					auto ResetCursorAndMoveOn = [&]() {
 						++Position;
-						++Cursor;
-					}
-					else {
-						Cursor = ShiftTable[Cursor];
-						if (Cursor == NPOS) {
-							++Position;
-							Cursor = 0;
-						}
-					}
+						Cursor = 0;
+					};
+					Cursor = ShiftTable[Cursor];
+					if (Cursor == NPOS)
+						ResetCursorAndMoveOn();
+				};
+				while (Cursor < Object.Length && Position < Length)
+					if (Self[Position] == Object[Cursor])
+						MoveOn();
+					else
+						RelocateCursor();
 				if (Cursor == Object.Length)
 					return Position - Object.Length;
 				else
@@ -239,7 +248,7 @@ namespace StandardTemplateLibrary {
 		}
 		auto &operator+=(const BasicString &Object) {
 			if (Object.Length > 0) {
-				auto NewPointer = new T[Length + Object.Length];
+				auto NewPointer = new T[Length + Object.Length + 1];
 				std::memcpy(NewPointer, Pointer, Length * sizeof(T));
 				std::memcpy(NewPointer + Length, Object.Pointer, Object.Length * sizeof(T));
 				Length += Object.Length;
@@ -250,23 +259,24 @@ namespace StandardTemplateLibrary {
 			return *this;
 		}
 		friend auto operator+(const BasicString &ObjectA, const BasicString &ObjectB) {
-			auto TemporaryObject = BasicString{ ObjectA };
-			return TemporaryObject += ObjectB;
+			return BasicString{ ObjectA } += ObjectB;
 		}
 		friend auto operator+(BasicString &&ObjectA, const BasicString &ObjectB) {
 			return ObjectA += ObjectB;
 		}
 		friend auto operator==(const BasicString &ObjectA, const BasicString &ObjectB) {
-			if (ObjectA.Length != ObjectB.Length)
-				return false;
-			else {
+			auto ElementWiseCompare = [&]() {
 				for (auto i = 0_size; i < ObjectA.Length; ++i)
 					if (ObjectA[i] == ObjectB[i])
 						continue;
 					else
 						return false;
 				return true;
-			}
+			};
+			if (ObjectA.Length != ObjectB.Length)
+				return false;
+			else
+				return ElementWiseCompare();
 		}
 		friend auto operator!=(const BasicString &ObjectA, const BasicString &ObjectB) {
 			return !(ObjectA == ObjectB);
@@ -283,7 +293,7 @@ namespace StandardTemplateLibrary {
 		friend auto operator>=(const BasicString &ObjectA, const BasicString &ObjectB) {
 			return !(ObjectA < ObjectB);
 		}
-		friend auto &operator<<(std::ostream &Output, const BasicString &Object) {
+		friend auto &operator<<(std::basic_ostream<T, std::char_traits<T>> &Output, const BasicString &Object) {
 			if (Object.Pointer != nullptr)
 				Output << Object.Pointer;
 			return Output;
