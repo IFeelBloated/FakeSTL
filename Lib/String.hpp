@@ -21,17 +21,17 @@ namespace StandardTemplateLibrary {
 		const auto &operator*() const {
 			return *Pointer;
 		}
-		auto &operator[](ptrdiff_t Position) {
+		auto &operator[](std::ptrdiff_t Position) {
 			return Pointer[Position];
 		}
-		const auto &operator[](ptrdiff_t Position) const {
+		const auto &operator[](std::ptrdiff_t Position) const {
 			return Pointer[Position];
 		}
-		auto &operator+=(ptrdiff_t Value) const {
+		auto &operator+=(std::ptrdiff_t Value) const {
 			Pointer += Value;
 			return *this;
 		}
-		auto &operator-=(ptrdiff_t Value) const {
+		auto &operator-=(std::ptrdiff_t Value) const {
 			Pointer -= Value;
 			return *this;
 		}
@@ -49,26 +49,26 @@ namespace StandardTemplateLibrary {
 		auto operator!=(const BasicStringIterator &Object) const {
 			return Pointer != Object.Pointer;
 		}
-		friend auto operator-(const BasicStringIterator &Object, ptrdiff_t Value) {
+		friend auto operator-(const BasicStringIterator &Object, std::ptrdiff_t Value) {
 			return  BasicStringIterator{ Object } -= Value;
 		}
-		friend auto operator-(BasicStringIterator &&Object, ptrdiff_t Value) {
+		friend auto operator-(BasicStringIterator &&Object, std::ptrdiff_t Value) {
 			return Object -= Value;
 		}
-		friend auto operator+(const BasicStringIterator &Object, ptrdiff_t Value) {
+		friend auto operator+(const BasicStringIterator &Object, std::ptrdiff_t Value) {
 			return  BasicStringIterator{ Object } += Value;
 		}
-		friend auto operator+(BasicStringIterator &&Object, ptrdiff_t Value) {
+		friend auto operator+(BasicStringIterator &&Object, std::ptrdiff_t Value) {
 			return Object += Value;
 		}
-		friend auto operator+(ptrdiff_t Value, const BasicStringIterator &Object) {
+		friend auto operator+(std::ptrdiff_t Value, const BasicStringIterator &Object) {
 			return  BasicStringIterator{ Object } += Value;
 		}
-		friend auto operator+(ptrdiff_t Value, BasicStringIterator &&Object) {
+		friend auto operator+(std::ptrdiff_t Value, BasicStringIterator &&Object) {
 			return Object += Value;
 		}
 		friend auto operator-(const BasicStringIterator &ObjectA, const BasicStringIterator &ObjectB) {
-			return reinterpret_cast<ptrdiff_t>(ObjectA.Pointer) - reinterpret_cast<ptrdiff_t>(ObjectB.Pointer);
+			return reinterpret_cast<std::ptrdiff_t>(ObjectA.Pointer) - reinterpret_cast<std::ptrdiff_t>(ObjectB.Pointer);
 		}
 	};
 
@@ -96,16 +96,16 @@ namespace StandardTemplateLibrary {
 			});
 		}
 	public:
-		static constexpr auto NPOS = static_cast<size_t>(-1);
+		static constexpr auto NPOS = static_cast<std::size_t>(-1);
 		BasicString() = default;
-		BasicString(size_t Count, T Value) {
+		BasicString(std::size_t Count, T Value) {
 			Pointer = new T[Count + 1];
 			for (auto i = 0_size; i < Count; ++i)
 				Pointer[i] = Value;
 			Pointer[Count] = 0;
 			Length = Count;
 		}
-		BasicString(const T *Value, size_t Length) {
+		BasicString(const T *Value, std::size_t Length) {
 			this->Length = Length;
 			Pointer = new T[Length + 1];
 			std::memcpy(Pointer, Value, Length * sizeof(T));
@@ -170,16 +170,16 @@ namespace StandardTemplateLibrary {
 		const auto Data() const {
 			return Pointer;
 		}
-		auto Substring(size_t Position, size_t Length = NPOS) const {
+		auto Substring(std::size_t Position, std::size_t Length = NPOS) const {
 			if (Position + Length > this->Length || Length == NPOS)
 				Length = this->Length - Position;
 			return BasicString{ Pointer + Position, Length };
 		}
-		auto Find(const BasicString &Object, size_t Position = 0) const {
+		auto Find(const BasicString &Object, std::size_t Position = 0) const {
 			auto GetMaximum = [](auto x, auto y) {
 				return x < y ? y : x;
 			};
-			auto ShiftTable = reinterpret_cast<size_t *>(alloca(GetMaximum(Object.Length, 2) * sizeof(size_t)));
+			auto ShiftTable = reinterpret_cast<std::size_t *>(alloca(GetMaximum(Object.Length, 2) * sizeof(std::size_t)));
 			auto InitializeShiftTable = [&]() {
 				auto Position = 2_size;
 				auto Cursor = 0_size;
@@ -240,10 +240,10 @@ namespace StandardTemplateLibrary {
 			OptimizeShiftTable();
 			return ActualFind();
 		}
-		auto &operator[](size_t Position) {
+		auto &operator[](std::size_t Position) {
 			return Pointer[Position];
 		}
-		const auto &operator[](size_t Position) const {
+		const auto &operator[](std::size_t Position) const {
 			return Pointer[Position];
 		}
 		auto &operator+=(const BasicString &Object) {
@@ -307,19 +307,19 @@ namespace StandardTemplateLibrary {
 
 	inline namespace Literals {
 		inline namespace StringLiterals {
-			auto operator""s(const char *Value, size_t Length) {
+			auto operator""s(const char *Value, std::size_t Length) {
 				return String{ Value, Length };
 			}
 
-			auto operator""s(const char16_t *Value, size_t Length) {
+			auto operator""s(const char16_t *Value, std::size_t Length) {
 				return U16String{ Value, Length };
 			}
 
-			auto operator""s(const char32_t *Value, size_t Length) {
+			auto operator""s(const char32_t *Value, std::size_t Length) {
 				return U32String{ Value, Length };
 			}
 
-			auto operator""s(const wchar_t *Value, size_t Length) {
+			auto operator""s(const wchar_t *Value, std::size_t Length) {
 				return WString{ Value, Length };
 			}
 		}
