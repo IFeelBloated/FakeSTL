@@ -2,6 +2,7 @@
 #include <new>
 #include <iostream>
 #include <initializer_list>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 
