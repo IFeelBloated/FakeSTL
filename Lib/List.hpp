@@ -50,11 +50,19 @@ namespace StandardTemplateLibrary {
 		const auto operator->() const {
 			return Pointer->Value;
 		}
-		auto &operator++() const {
+		auto &operator++() {
 			Pointer = Pointer->Next;
 			return *this;
 		}
-		auto &operator--() const {
+		const auto &operator++() const {
+			Pointer = Pointer->Next;
+			return *this;
+		}
+		auto &operator--() {
+			Pointer = Pointer->Previous;
+			return *this;
+		}
+		const auto &operator--() const {
 			Pointer = Pointer->Previous;
 			return *this;
 		}

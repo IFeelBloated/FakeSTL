@@ -27,19 +27,35 @@ namespace StandardTemplateLibrary {
 		const auto &operator[](std::ptrdiff_t Position) const {
 			return Pointer[Position];
 		}
-		auto &operator+=(std::ptrdiff_t Value) const {
+		auto &operator+=(std::ptrdiff_t Value) {
 			Pointer += Value;
 			return *this;
 		}
-		auto &operator-=(std::ptrdiff_t Value) const {
+		const auto &operator+=(std::ptrdiff_t Value) const {
+			Pointer += Value;
+			return *this;
+		}
+		auto &operator-=(std::ptrdiff_t Value) {
 			Pointer -= Value;
 			return *this;
 		}
-		auto &operator++() const {
+		const auto &operator-=(std::ptrdiff_t Value) const {
+			Pointer -= Value;
+			return *this;
+		}
+		auto &operator++() {
 			++Pointer;
 			return *this;
 		}
-		auto &operator--() const {
+		const auto &operator++() const {
+			++Pointer;
+			return *this;
+		}
+		auto &operator--() {
+			--Pointer;
+			return *this;
+		}
+		const auto &operator--() const {
 			--Pointer;
 			return *this;
 		}

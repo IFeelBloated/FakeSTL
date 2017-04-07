@@ -26,11 +26,19 @@ namespace StandardTemplateLibrary {
 		const auto operator->() const {
 			return Iterator;
 		}
-		auto &operator++() const {
+		auto &operator++() {
 			--Iterator;
 			return *this;
 		}
-		auto &operator--() const {
+		const auto &operator++() const {
+			--Iterator;
+			return *this;
+		}
+		auto &operator--() {
+			++Iterator;
+			return *this;
+		}
+		const auto &operator--() const {
 			++Iterator;
 			return *this;
 		}
