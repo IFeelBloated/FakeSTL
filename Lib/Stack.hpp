@@ -5,7 +5,7 @@
 namespace StandardTemplateLibrary {
 	template<typename IteratorType>
 	class StackIterator final {
-		IteratorType Iterator;
+		mutable IteratorType Iterator;
 	public:
 		StackIterator() = delete;
 		StackIterator(IteratorType Item) :Iterator{ Item } {}
@@ -52,7 +52,7 @@ namespace StandardTemplateLibrary {
 		Stack(std::initializer_list<T> Initialization) {
 			Pointer = new Container{ Initialization };
 		}
-		Stack(Stack &&Object) :Stack{} {
+		Stack(Stack &&Object) {
 			*this = static_cast<Stack &&>(Object);
 		}
 		Stack(const Stack &Object) :Stack{} {
@@ -116,7 +116,7 @@ namespace StandardTemplateLibrary {
 		auto end() {
 			return StackIterator<decltype(Pointer->end())>{--Pointer->begin()};
 		}
-		const auto end() const{
+		const auto end() const {
 			return StackIterator<decltype(Pointer->end())>{--Pointer->begin()};
 		}
 	};

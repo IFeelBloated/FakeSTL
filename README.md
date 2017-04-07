@@ -16,7 +16,7 @@ the main problem with the existing STL implementations for this purpose is the r
 ## Containers/Structures
 - *StandardTemplateLibrary::List*: an incomplete implementation of std::list, circular doubly linked list
 - *StandardTemplateLibrary::String/WString/U16String/U32String*: an incomplete implementation of std::string/wstring/u16string/u32string, dynamic array of characters
-
+- *StandardTemplateLibrary::Stack*: an incomplete implementation of std::stack, stack adapter
 
 ## Algorithms
 - *[Merge Sort](https://en.wikipedia.org/wiki/Merge_sort)*: StandardTemplateLibrary::List::Sort()
