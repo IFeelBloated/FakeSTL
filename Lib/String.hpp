@@ -3,92 +3,6 @@
 
 namespace StandardTemplateLibrary {
 	template<typename T>
-	class BasicStringIterator final {
-		mutable T *Pointer = nullptr;
-	public:
-		BasicStringIterator() = delete;
-		BasicStringIterator(T *Item) {
-			Pointer = Item;
-		}
-		BasicStringIterator(const BasicStringIterator &) = default;
-		BasicStringIterator(BasicStringIterator &&) = default;
-		auto operator=(const BasicStringIterator &)->BasicStringIterator & = default;
-		auto operator=(BasicStringIterator &&)->BasicStringIterator & = default;
-		~BasicStringIterator() = default;
-		auto &operator*() {
-			return *Pointer;
-		}
-		const auto &operator*() const {
-			return *Pointer;
-		}
-		auto &operator[](std::ptrdiff_t Position) {
-			return Pointer[Position];
-		}
-		const auto &operator[](std::ptrdiff_t Position) const {
-			return Pointer[Position];
-		}
-		auto &operator+=(std::ptrdiff_t Value) {
-			Pointer += Value;
-			return *this;
-		}
-		const auto &operator+=(std::ptrdiff_t Value) const {
-			Pointer += Value;
-			return *this;
-		}
-		auto &operator-=(std::ptrdiff_t Value) {
-			Pointer -= Value;
-			return *this;
-		}
-		const auto &operator-=(std::ptrdiff_t Value) const {
-			Pointer -= Value;
-			return *this;
-		}
-		auto &operator++() {
-			++Pointer;
-			return *this;
-		}
-		const auto &operator++() const {
-			++Pointer;
-			return *this;
-		}
-		auto &operator--() {
-			--Pointer;
-			return *this;
-		}
-		const auto &operator--() const {
-			--Pointer;
-			return *this;
-		}
-		auto operator==(const BasicStringIterator &Object) const {
-			return Pointer == Object.Pointer;
-		}
-		auto operator!=(const BasicStringIterator &Object) const {
-			return Pointer != Object.Pointer;
-		}
-		friend auto operator-(const BasicStringIterator &Object, std::ptrdiff_t Value) {
-			return  BasicStringIterator{ Object } -= Value;
-		}
-		friend auto operator-(BasicStringIterator &&Object, std::ptrdiff_t Value) {
-			return Object -= Value;
-		}
-		friend auto operator+(const BasicStringIterator &Object, std::ptrdiff_t Value) {
-			return  BasicStringIterator{ Object } += Value;
-		}
-		friend auto operator+(BasicStringIterator &&Object, std::ptrdiff_t Value) {
-			return Object += Value;
-		}
-		friend auto operator+(std::ptrdiff_t Value, const BasicStringIterator &Object) {
-			return  BasicStringIterator{ Object } += Value;
-		}
-		friend auto operator+(std::ptrdiff_t Value, BasicStringIterator &&Object) {
-			return Object += Value;
-		}
-		friend auto operator-(const BasicStringIterator &ObjectA, const BasicStringIterator &ObjectB) {
-			return reinterpret_cast<std::ptrdiff_t>(ObjectA.Pointer) - reinterpret_cast<std::ptrdiff_t>(ObjectB.Pointer);
-		}
-	};
-
-	template<typename T>
 	class BasicString final {
 		T *Pointer = nullptr;
 		decltype(0_size) Length = 0;
@@ -112,6 +26,8 @@ namespace StandardTemplateLibrary {
 			});
 		}
 	public:
+		using BasicStringIterator = T *;
+		using ConstantBasicStringIterator = const T *;
 		static constexpr auto NPOS = static_cast<std::size_t>(-1);
 		BasicString() = default;
 		BasicString(std::size_t Count, T Value) {
@@ -166,16 +82,16 @@ namespace StandardTemplateLibrary {
 			return Length == 0;
 		}
 		auto begin() {
-			return BasicStringIterator<T>{ Pointer };
+			return BasicStringIterator{ Pointer };
 		}
-		const auto begin() const {
-			return BasicStringIterator<T>{ Pointer };
+		auto begin() const {
+			return ConstantBasicStringIterator{ Pointer };
 		}
 		auto end() {
-			return BasicStringIterator<T>{ Pointer + Length };
+			return BasicStringIterator{ Pointer + Length };
 		}
-		const auto end() const {
-			return BasicStringIterator<T>{ Pointer + Length };
+		auto end() const {
+			return ConstantBasicStringIterator{ Pointer + Length };
 		}
 		auto Size() const {
 			return Length;

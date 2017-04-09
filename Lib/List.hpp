@@ -24,37 +24,40 @@ namespace StandardTemplateLibrary {
 	};
 
 	template<typename T>
-	class ListIterator final {
-		template<typename T>
-		friend class List;
-		mutable ListNode<T> *Pointer = nullptr;
-	public:
-		ListIterator() = delete;
-		ListIterator(ListNode<T> *Item) {
+	struct ListIteratorBase {
+		ListNode<T> *Pointer = nullptr;
+		ListIteratorBase() = default;
+		ListIteratorBase(ListNode<T> *Item) {
 			Pointer = Item;
 		}
+		ListIteratorBase(const ListIteratorBase &) = default;
+		ListIteratorBase(ListIteratorBase &&) = default;
+		auto operator=(const ListIteratorBase &)->ListIteratorBase & = default;
+		auto operator=(ListIteratorBase &&)->ListIteratorBase & = default;
+		~ListIteratorBase() = default;
+		friend auto operator==(ListIteratorBase ObjectA, ListIteratorBase ObjectB) {
+			return ObjectA.Pointer == ObjectB.Pointer;
+		}
+		friend auto operator!=(ListIteratorBase ObjectA, ListIteratorBase ObjectB) {
+			return ObjectA.Pointer != ObjectB.Pointer;
+		}
+	};
+
+	template<typename T>
+	struct ListIterator final :public ListIteratorBase<T> {
+		using ListIteratorBase::ListIteratorBase;
 		ListIterator(const ListIterator &) = default;
 		ListIterator(ListIterator &&) = default;
 		auto operator=(const ListIterator &)->ListIterator & = default;
 		auto operator=(ListIterator &&)->ListIterator & = default;
 		~ListIterator() = default;
-		auto &operator*() {
+		auto &operator*() const {
 			return *Pointer->Value;
 		}
-		const auto &operator*() const {
-			return *Pointer->Value;
-		}
-		auto operator->() {
-			return Pointer->Value;
-		}
-		const auto operator->() const {
+		auto *operator->() const {
 			return Pointer->Value;
 		}
 		auto &operator++() {
-			Pointer = Pointer->Next;
-			return *this;
-		}
-		const auto &operator++() const {
 			Pointer = Pointer->Next;
 			return *this;
 		}
@@ -62,15 +65,32 @@ namespace StandardTemplateLibrary {
 			Pointer = Pointer->Previous;
 			return *this;
 		}
-		const auto &operator--() const {
-			Pointer = Pointer->Previous;
+	};
+
+	template<typename T>
+	struct ConstantListIterator final :public ListIteratorBase<T> {
+		using ListIteratorBase::ListIteratorBase;
+		ConstantListIterator(const ConstantListIterator &) = default;
+		ConstantListIterator(ConstantListIterator &&) = default;
+		auto operator=(const ConstantListIterator &)->ConstantListIterator & = default;
+		auto operator=(ConstantListIterator &&)->ConstantListIterator & = default;
+		~ConstantListIterator() = default;
+		ConstantListIterator(ListIterator<T> Item) {
+			Pointer = Item.Pointer;
+		}
+		const auto &operator*() const {
+			return *Pointer->Value;
+		}
+		const auto *operator->() const {
+			return Pointer->Value;
+		}
+		auto &operator++() {
+			Pointer = Pointer->Next;
 			return *this;
 		}
-		auto operator==(const ListIterator &Object) const {
-			return Pointer == Object.Pointer;
-		}
-		auto operator!=(const ListIterator &Object) const {
-			return Pointer != Object.Pointer;
+		auto &operator--() {
+			Pointer = Pointer->Previous;
+			return *this;
 		}
 	};
 
@@ -78,7 +98,7 @@ namespace StandardTemplateLibrary {
 	class List final {
 		ListNode<T> *Head = nullptr;
 		decltype(0_size) Length = 0;
-		auto InsertNode(const ListIterator<T> Position, ListNode<T> *NewNode) {
+		auto InsertNode(ConstantListIterator<T> Position, ListNode<T> *NewNode) {
 			NewNode->Next = Position.Pointer;
 			NewNode->Previous = Position.Pointer->Previous;
 			Position.Pointer->Previous->Next = NewNode;
@@ -156,10 +176,10 @@ namespace StandardTemplateLibrary {
 			Insert(end(), static_cast<T &&>(Object));
 			return *this;
 		}
-		auto Insert(const ListIterator<T> Position, const T &Object) {
+		auto Insert(ConstantListIterator<T> Position, const T &Object) {
 			return InsertNode(Position, new ListNode<T>{ Object });
 		}
-		auto Insert(const ListIterator<T> Position, T &&Object) {
+		auto Insert(ConstantListIterator<T> Position, T &&Object) {
 			return InsertNode(Position, new ListNode<T>{ static_cast<T &&>(Object) });
 		}
 		auto PopFront() {
@@ -172,7 +192,7 @@ namespace StandardTemplateLibrary {
 			Erase(--end());
 			return *this;
 		}
-		auto Erase(const ListIterator<T> Position) {
+		auto Erase(ConstantListIterator<T> Position) {
 			auto Pointer = Position.Pointer->Next;
 			Position.Pointer->Previous->Next = Position.Pointer->Next;
 			Position.Pointer->Next->Previous = Position.Pointer->Previous;
@@ -187,14 +207,14 @@ namespace StandardTemplateLibrary {
 		auto begin() {
 			return ListIterator<T>{ Head->Next };
 		}
-		const auto begin() const {
-			return ListIterator<T>{ Head->Next };
+		auto begin() const {
+			return ConstantListIterator<T>{ Head->Next };
 		}
 		auto end() {
 			return ListIterator<T>{ Head };
 		}
-		const auto end() const {
-			return ListIterator<T>{ Head };
+		auto end() const {
+			return ConstantListIterator<T>{ Head };
 		}
 		auto Size() const {
 			return Length;

@@ -3,53 +3,6 @@
 #include "Deque.hpp"
 
 namespace StandardTemplateLibrary {
-	template<typename IteratorType>
-	class StackIterator final {
-		mutable IteratorType Iterator;
-	public:
-		StackIterator() = delete;
-		StackIterator(IteratorType Item) :Iterator{ Item } {}
-		StackIterator(StackIterator &&) = default;
-		StackIterator(const StackIterator &) = default;
-		auto operator=(StackIterator &&)->StackIterator & = default;
-		auto operator=(const StackIterator &)->StackIterator & = default;
-		~StackIterator() = default;
-		auto &operator*() {
-			return *Iterator;
-		}
-		const auto &operator*() const {
-			return *Iterator;
-		}
-		auto operator->() {
-			return Iterator;
-		}
-		const auto operator->() const {
-			return Iterator;
-		}
-		auto &operator++() {
-			--Iterator;
-			return *this;
-		}
-		const auto &operator++() const {
-			--Iterator;
-			return *this;
-		}
-		auto &operator--() {
-			++Iterator;
-			return *this;
-		}
-		const auto &operator--() const {
-			++Iterator;
-			return *this;
-		}
-		auto operator==(const StackIterator &Object) const {
-			return Iterator == Object.Iterator;
-		}
-		auto operator!=(const StackIterator &Object) const {
-			return Iterator != Object.Iterator;
-		}
-	};
-
 	template<typename T, typename Container = Deque<T>>
 	class Stack final {
 		Container *Pointer = nullptr;
@@ -114,18 +67,6 @@ namespace StandardTemplateLibrary {
 		}
 		auto Size() const {
 			return Pointer->Size();
-		}
-		auto begin() {
-			return StackIterator<decltype(Pointer->begin())>{--Pointer->end()};
-		}
-		const auto begin() const {
-			return StackIterator<decltype(Pointer->begin())>{--Pointer->end()};
-		}
-		auto end() {
-			return StackIterator<decltype(Pointer->end())>{--Pointer->begin()};
-		}
-		const auto end() const {
-			return StackIterator<decltype(Pointer->end())>{--Pointer->begin()};
 		}
 	};
 }
