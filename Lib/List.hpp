@@ -45,51 +45,51 @@ namespace StandardTemplateLibrary {
 
 	template<typename T>
 	struct ListIterator final :public ListIteratorBase<T> {
-		using ListIteratorBase::ListIteratorBase;
+		using ListIteratorBase<T>::ListIteratorBase;
 		ListIterator(const ListIterator &) = default;
 		ListIterator(ListIterator &&) = default;
 		auto operator=(const ListIterator &)->ListIterator & = default;
 		auto operator=(ListIterator &&)->ListIterator & = default;
 		~ListIterator() = default;
 		auto &operator*() const {
-			return *Pointer->Value;
+			return *this->Pointer->Value;
 		}
 		auto *operator->() const {
-			return Pointer->Value;
+			return this->Pointer->Value;
 		}
 		auto &operator++() {
-			Pointer = Pointer->Next;
+			this->Pointer = this->Pointer->Next;
 			return *this;
 		}
 		auto &operator--() {
-			Pointer = Pointer->Previous;
+			this->Pointer = this->Pointer->Previous;
 			return *this;
 		}
 	};
 
 	template<typename T>
 	struct ConstantListIterator final :public ListIteratorBase<T> {
-		using ListIteratorBase::ListIteratorBase;
+		using ListIteratorBase<T>::ListIteratorBase;
+		ConstantListIterator(ListIterator<T> Item) {
+			this->Pointer = Item.Pointer;
+		}
 		ConstantListIterator(const ConstantListIterator &) = default;
 		ConstantListIterator(ConstantListIterator &&) = default;
 		auto operator=(const ConstantListIterator &)->ConstantListIterator & = default;
 		auto operator=(ConstantListIterator &&)->ConstantListIterator & = default;
 		~ConstantListIterator() = default;
-		ConstantListIterator(ListIterator<T> Item) {
-			Pointer = Item.Pointer;
-		}
 		const auto &operator*() const {
-			return *Pointer->Value;
+			return *this->Pointer->Value;
 		}
 		const auto *operator->() const {
-			return Pointer->Value;
+			return this->Pointer->Value;
 		}
 		auto &operator++() {
-			Pointer = Pointer->Next;
+			this->Pointer = this->Pointer->Next;
 			return *this;
 		}
 		auto &operator--() {
-			Pointer = Pointer->Previous;
+			this->Pointer = this->Pointer->Previous;
 			return *this;
 		}
 	};
