@@ -48,9 +48,6 @@ struct Node final {
 	auto operator=(const Node &)->Node & = default;
 	auto operator=(Node &&)->Node & = default;
 	~Node() = default;
-	auto operator==(const Node &Object) const {
-		return Value.Operand == Object.Value.Operand;
-	}
 	auto operator==(char Value) const {
 		return this->Value.Operator == Value;
 	}
