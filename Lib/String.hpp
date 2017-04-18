@@ -96,10 +96,10 @@ namespace StandardTemplateLibrary {
 		auto Size() const {
 			return Length;
 		}
-		auto Data() {
+		auto *Data() {
 			return Pointer;
 		}
-		const auto Data() const {
+		const auto *Data() const {
 			return Pointer;
 		}
 		auto Substring(std::size_t Position, std::size_t Length = NPOS) const {
