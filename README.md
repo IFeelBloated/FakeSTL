@@ -25,3 +25,6 @@ the main problem with the existing STL implementations for this purpose is the r
 ## Demonstrations
 - *Polynomial Multiplication*: Demo/Polynomial-List.cpp
 - *Expression Evaluation*: Demo/Expression Evaluation-Stack.cpp
+
+## Extras
+- Sparse Matrix Multiplication: Extras/SparseMatrix.cpp
