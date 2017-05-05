@@ -78,13 +78,13 @@ namespace StandardTemplateLibrary::Extras {
 		auto &Data() {
 			return *Pointer;
 		}
+		const auto &Data() const {
+			return *Pointer;
+		}
 		static auto NullVector(std::size_t Dimension) {
 			auto Vector = SparseVector{};
 			Vector.Dimension = Dimension;
 			return Vector;
-		}
-		const auto &Data() const {
-			return *Pointer;
 		}
 		auto &operator*=(double Value) {
 			for (auto &x : *Pointer)
