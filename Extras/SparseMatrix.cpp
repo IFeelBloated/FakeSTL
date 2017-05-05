@@ -1,7 +1,6 @@
 #include <iomanip>
 #include <cstdlib>
 #include "Helpers.hpp"
-#include "Stack.hpp"
 #include "List.hpp"
 
 namespace StandardTemplateLibrary::Extras {
@@ -22,16 +21,8 @@ namespace StandardTemplateLibrary::Extras {
 
 	class SparseVector final {
 		using Container = List<VectorNode>;
-		using VectorStack = Stack<VectorNode, Container>;
 		Container *Pointer = nullptr;
 		decltype(0_size) Dimension = 0;
-		static auto PushVectorOnStack(const SparseVector &Vector, VectorStack &Stack) {
-			auto Cursor = --Vector.Pointer->end();
-			while (Cursor != --Vector.Pointer->begin()) {
-				Stack += *Cursor;
-				--Cursor;
-			}
-		}
 	public:
 		SparseVector() {
 			Pointer = new Container{};
@@ -87,6 +78,11 @@ namespace StandardTemplateLibrary::Extras {
 		auto &Data() {
 			return *Pointer;
 		}
+		static auto NullVector(std::size_t Dimension) {
+			auto Vector = SparseVector{};
+			Vector.Dimension = Dimension;
+			return Vector;
+		}
 		const auto &Data() const {
 			return *Pointer;
 		}
@@ -96,45 +92,39 @@ namespace StandardTemplateLibrary::Extras {
 			return *this;
 		}
 		auto &operator+=(const SparseVector &Object) {
-			auto LeftHandSideStack = VectorStack{};
-			auto RightHandSideStack = VectorStack{};
-			auto LeftHandSideStackActivated = [&](auto Cursor) {
-				return !LeftHandSideStack.Empty() && LeftHandSideStack.Top().Index == Cursor;
+			auto Result = NullVector(Dimension);
+			auto LeftHandSideCursor = Pointer->begin();
+			auto RightHandSideCursor = Object.Pointer->begin();
+			auto LeftHandSideVectorActivated = [&](auto Cursor) {
+				return LeftHandSideCursor != Pointer->end() && LeftHandSideCursor->Index == Cursor;
 			};
-			auto RightHandSideStackActivated = [&](auto Cursor) {
-				return !RightHandSideStack.Empty() && RightHandSideStack.Top().Index == Cursor;
+			auto RightHandSideVectorActivated = [&](auto Cursor) {
+				return RightHandSideCursor != Object.Pointer->end() && RightHandSideCursor->Index == Cursor;
 			};
-			auto AddUpAndShiftTheSumBack = [&]() {
-				auto Value = LeftHandSideStack.Top().Value + RightHandSideStack.Top().Value;
+			auto AddUpAndShiftTheSumToResult = [&]() {
+				auto Value = LeftHandSideCursor->Value + RightHandSideCursor->Value;
 				if (Value != 0.)
-					*Pointer += { Value, LeftHandSideStack.Top().Index };
-				--LeftHandSideStack;
-				--RightHandSideStack;
+					*Result.Pointer += { Value, LeftHandSideCursor->Index };
+				++LeftHandSideCursor;
+				++RightHandSideCursor;
 			};
-			auto ShiftTheLeftHandSideElementBack = [&] {
-				*Pointer += LeftHandSideStack.Top();
-				--LeftHandSideStack;
+			auto ShiftTheLeftHandSideElementToResult = [&] {
+				*Result.Pointer += *LeftHandSideCursor;
+				++LeftHandSideCursor;
 			};
-			auto ShiftTheRightHandSideElementBack = [&] {
-				*Pointer += RightHandSideStack.Top();
-				--RightHandSideStack;
+			auto ShiftTheRightHandSideElementToResult = [&] {
+				*Result.Pointer += *RightHandSideCursor;
+				++RightHandSideCursor;
 			};
-			PushVectorOnStack(*this, LeftHandSideStack);
-			PushVectorOnStack(Object, RightHandSideStack);
-			Pointer->Clear();
 			for (auto Cursor = 0_size; Cursor < Dimension; ++Cursor)
-				if (LeftHandSideStackActivated(Cursor) && RightHandSideStackActivated(Cursor))
-					AddUpAndShiftTheSumBack();
-				else if (LeftHandSideStackActivated(Cursor))
-					ShiftTheLeftHandSideElementBack();
-				else if (RightHandSideStackActivated(Cursor))
-					ShiftTheRightHandSideElementBack();
+				if (LeftHandSideVectorActivated(Cursor) && RightHandSideVectorActivated(Cursor))
+					AddUpAndShiftTheSumToResult();
+				else if (LeftHandSideVectorActivated(Cursor))
+					ShiftTheLeftHandSideElementToResult();
+				else if (RightHandSideVectorActivated(Cursor))
+					ShiftTheRightHandSideElementToResult();
+			*this = static_cast<SparseVector &&>(Result);
 			return *this;
-		}
-		static auto NullVector(std::size_t Dimension) {
-			auto Vector = SparseVector{};
-			Vector.Dimension = Dimension;
-			return Vector;
 		}
 		friend auto operator*(double Value, SparseVector &&Object) {
 			return Object *= Value;
@@ -149,15 +139,14 @@ namespace StandardTemplateLibrary::Extras {
 			return SparseVector{ Object } *= Value;
 		}
 		friend auto &operator<<(std::ostream &Output, const SparseVector &Object) {
-			auto ElementStack = VectorStack{};
+			auto Cursor = Object.Pointer->begin();
 			auto PrintRealNumberInFormat = [&](auto Value) {
 				Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << Value << " ";
 			};
-			PushVectorOnStack(Object, ElementStack);
-			for (auto Cursor = 0_size; Cursor < Object.Dimension; ++Cursor)
-				if (!ElementStack.Empty() && ElementStack.Top().Index == Cursor) {
-					PrintRealNumberInFormat(ElementStack.Top().Value);
-					--ElementStack;
+			for (auto Position = 0_size; Position < Object.Dimension; ++Position)
+				if (Cursor != Object.Pointer->end() && Cursor->Index == Position) {
+					PrintRealNumberInFormat(Cursor->Value);
+					++Cursor;
 				}
 				else
 					PrintRealNumberInFormat(0.);
@@ -292,25 +281,16 @@ namespace StandardTemplateLibrary::Extras {
 			return ObjectA *= ObjectB;
 		}
 		friend auto &operator<<(std::ostream &Output, const SparseMatrix &Object) {
-			using MatrixStack = Stack<MatrixNode, Container>;
-			auto ElementStack = MatrixStack{};
-			auto PushMatrixOnStack = [&]() {
-				auto Cursor = --Object.Pointer->end();
-				while (Cursor != --Object.Pointer->begin()) {
-					ElementStack += *Cursor;
-					--Cursor;
-				}
-			};
+			auto Cursor = Object.Pointer->begin();
 			auto PrintNullVector = [&]() {
 				for (auto i = 0_size; i < Object.Column; ++i)
 					Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << 0. << " ";
 				Output << std::endl;
 			};
-			PushMatrixOnStack();
-			for (auto Cursor = 0_size; Cursor < Object.Row; ++Cursor)
-				if (!ElementStack.Empty() && ElementStack.Top().Index == Cursor) {
-					Output << ElementStack.Top().Value << std::endl;
-					--ElementStack;
+			for (auto Position = 0_size; Position < Object.Row; ++Position)
+				if (Cursor != Object.Pointer->end() && Cursor->Index == Position) {
+					Output << Cursor->Value << std::endl;
+					++Cursor;
 				}
 				else
 					PrintNullVector();
