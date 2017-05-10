@@ -3,6 +3,8 @@
 #include <iostream>
 #include <initializer_list>
 #include <cstddef>
+#include <cstdlib>
+#include <cwchar>
 #include <cstdint>
 #include <cstring>
 
