@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdlib>
 #include "Stack.hpp"
 #include "List.hpp"
 
@@ -69,7 +68,7 @@ auto main()->int {
 	auto RPNExpression = Expression{};
 	auto GetRPNExpression = [&]() {
 		using ExpressionStack = StandardTemplateLibrary::Stack<Node, Expression>;
-		auto OperatorStack = ExpressionStack{ 0.0 };
+		auto OperatorStack = ExpressionStack{ '#' };
 		auto PopToRPNExpression = [&]() {
 			RPNExpression += OperatorStack.Top();
 			--OperatorStack;
@@ -151,11 +150,15 @@ auto main()->int {
 			std::cout << x << ' ';
 		std::cout << std::endl;
 	};
+	auto Pause = []() {
+		std::cout << "Press ENTER to continue . . . ";
+		std::cin.get();
+	};
 	std::cout << "Infix Expression: ";
 	PrintExpression(InfixExpression);
 	std::cout << "RPN Expression: ";
 	GetRPNExpression();
 	PrintExpression(RPNExpression);
 	std::cout << "Result: " << EvaluateRPNExpression() << std::endl;
-	system("pause");
+	Pause();
 }

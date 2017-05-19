@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdlib>
 #include "List.hpp"
 
 struct PolynomialTerm final {
@@ -96,6 +95,10 @@ auto main()->int {
 			}
 		std::cout << std::endl;
 	};
+	auto Pause = []() {
+		std::cout << "Press ENTER to continue . . . ";
+		std::cin.get();
+	};
 	std::cout << "PolynomialA: ";
 	SimplifyPolynomial(PolynomialA);
 	PrintPolynomial(PolynomialA);
@@ -104,5 +107,5 @@ auto main()->int {
 	PrintPolynomial(PolynomialB);
 	std::cout << "PolynomialA * PolynomialB: ";
 	PrintPolynomial(MultiplyPolynomial());
-	system("pause");
+	Pause();
 }

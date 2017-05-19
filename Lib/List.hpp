@@ -162,9 +162,12 @@ namespace StandardTemplateLibrary {
 		auto &operator+=(List &&Object) {
 			if (Object.Empty() == false) {
 				Head->Previous->Next = Object.Head->Next;
+				Object.Head->Next->Previous = Head->Previous;
+				Head->Previous = Object.Head->Previous;
 				Object.Head->Previous->Next = Head;
 				Object.Head->Next = Object.Head;
 				Object.Head->Previous = Object.Head;
+				Length += Object.Length;
 			}
 			return *this;
 		}

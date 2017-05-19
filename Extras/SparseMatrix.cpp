@@ -1,5 +1,4 @@
 #include <iomanip>
-#include <cstdlib>
 #include "Helpers.hpp"
 #include "List.hpp"
 
@@ -309,8 +308,12 @@ auto main()->int {
 		{ 0, 2, 0, 1 },
 		{ 0, 0, 0, 0 },
 		{ 0, 3, 8, 0 } };
+	auto Pause = []() {
+		std::cout << "Press ENTER to continue . . . ";
+		std::cin.get();
+	};
 	std::cout << "A = " << std::endl << A << std::endl;
 	std::cout << "B = " << std::endl << B << std::endl;
 	std::cout << "A * B = " << std::endl << A * B << std::endl;
-	system("pause");
+	Pause();
 }
