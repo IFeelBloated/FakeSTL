@@ -8,11 +8,11 @@ private:
 		decltype(0.) Operand = 0.;
 		decltype('0') Operator;
 		DataSet() = default;
-		DataSet(double Value) {
-			Operand = Value;
+		DataSet(double Operand) {
+			this->Operand = Operand;
 		}
-		DataSet(char Value) {
-			Operator = Value;
+		DataSet(char Operator) {
+			this->Operator = Operator;
 		}
 		DataSet(const DataSet &) = default;
 		DataSet(DataSet &&) = default;
@@ -21,16 +21,16 @@ private:
 		~DataSet() = default;
 	};
 public:
-	DataSet Value = {};
+	DataSet DataUnion = {};
 	decltype(0) Precedence = 0;
 	decltype(false) IsOperator = false;
 	ExpressionNode() = default;
-	ExpressionNode(double Value) {
-		this->Value = Value;
+	ExpressionNode(double Operand) {
+		DataUnion = Operand;
 	}
-	ExpressionNode(char Value) {
+	ExpressionNode(char Operator) {
 		auto GetPrecedence = [&]() {
-			switch (Value) {
+			switch (Operator) {
 			case '+': case '-':
 				return 1;
 			case '*': case '/':
@@ -39,7 +39,7 @@ public:
 				return 0;
 			}
 		};
-		this->Value = Value;
+		DataUnion = Operator;
 		IsOperator = true;
 		Precedence = GetPrecedence();
 	}
@@ -48,17 +48,17 @@ public:
 	auto operator=(const ExpressionNode &)->ExpressionNode & = default;
 	auto operator=(ExpressionNode &&)->ExpressionNode & = default;
 	~ExpressionNode() = default;
-	auto operator==(char Value) const {
-		return IsOperator && this->Value.Operator == Value;
+	auto operator==(char Operator) const {
+		return IsOperator && DataUnion.Operator == Operator;
 	}
-	auto operator!=(char Value) const {
-		return !(*this == Value);
+	auto operator!=(char Operator) const {
+		return !(*this == Operator);
 	}
 	friend auto &operator<<(std::ostream &Output, const ExpressionNode &SomeExpressionNode) {
 		if (SomeExpressionNode.IsOperator)
-			Output << SomeExpressionNode.Value.Operator;
+			Output << SomeExpressionNode.DataUnion.Operator;
 		else
-			Output << SomeExpressionNode.Value.Operand;
+			Output << SomeExpressionNode.DataUnion.Operand;
 		return Output;
 	}
 };
@@ -109,29 +109,29 @@ auto main()->int {
 		using ExpressionStack = StandardTemplateLibrary::Stack<decltype(0.), StandardTemplateLibrary::List<decltype(0.)>>;
 		auto OperandStack = ExpressionStack{};
 		auto Evaluate = [&](auto Operator) {
-			auto ActualEvaluate = [&](auto &&Action) {
+			auto TakeAction = [&](auto &&Action) {
 				auto RightHandOperand = OperandStack.Top();
 				--OperandStack;
 				Action(OperandStack.Top(), RightHandOperand);
 			};
 			switch (Operator) {
 			case '+':
-				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
+				TakeAction([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand += RightHandOperand;
 				});
 				break;
 			case '-':
-				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
+				TakeAction([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand -= RightHandOperand;
 				});
 				break;
 			case '*':
-				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
+				TakeAction([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand *= RightHandOperand;
 				});
 				break;
 			case '/':
-				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
+				TakeAction([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand /= RightHandOperand;
 				});
 				break;
@@ -141,9 +141,9 @@ auto main()->int {
 		};
 		for (auto &x : RPNExpression)
 			if (!x.IsOperator)
-				OperandStack += x.Value.Operand;
+				OperandStack += x.DataUnion.Operand;
 			else
-				Evaluate(x.Value.Operator);
+				Evaluate(x.DataUnion.Operator);
 		return OperandStack.Top();
 	};
 	auto PrintExpression = [](auto &Expression) {

@@ -3,22 +3,21 @@
 #include "List.hpp"
 
 namespace StandardTemplateLibrary::Extras {
-	struct VectorNode final {
-		decltype(0.) Value = 0.;
-		decltype(0_size) Index = 0;
-		VectorNode() = default;
-		VectorNode(double Value, std::size_t Index) {
-			this->Value = Value;
-			this->Index = Index;
-		}
-		VectorNode(VectorNode &&) = default;
-		VectorNode(const VectorNode &) = default;
-		auto operator=(VectorNode &&)->VectorNode & = default;
-		auto operator=(const VectorNode &)->VectorNode & = default;
-		~VectorNode() = default;
-	};
-
 	class SparseVector final {
+		struct VectorNode final {
+			decltype(0.) Value = 0.;
+			decltype(0_size) Index = 0;
+			VectorNode() = default;
+			VectorNode(double Value, std::size_t Index) {
+				this->Value = Value;
+				this->Index = Index;
+			}
+			VectorNode(VectorNode &&) = default;
+			VectorNode(const VectorNode &) = default;
+			auto operator=(VectorNode &&)->VectorNode & = default;
+			auto operator=(const VectorNode &)->VectorNode & = default;
+			~VectorNode() = default;
+		};
 		using Container = List<VectorNode>;
 		Container *ContainerPointer = nullptr;
 		decltype(0_size) Dimension = 0;
@@ -161,30 +160,29 @@ namespace StandardTemplateLibrary::Extras {
 		}
 	};
 
-	struct MatrixNode final {
-		SparseVector Vector = {};
-		decltype(0_size) Index = 0;
-		MatrixNode() = default;
-		MatrixNode(SparseVector &&Value, std::size_t Index) {
-			this->Vector = static_cast<SparseVector &&>(Value);
-			this->Index = Index;
-		}
-		MatrixNode(const SparseVector &Value, std::size_t Index) {
-			this->Vector = Value;
-			this->Index = Index;
-		}
-		MatrixNode(MatrixNode &&OtherMatrixNode) :MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index } {}
-		MatrixNode(const MatrixNode &) = default;
-		auto &operator=(MatrixNode &&OtherMatrixNode) {
-			if (this != &OtherMatrixNode)
-				new(this) MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index };
-			return *this;
-		}
-		auto operator=(const MatrixNode &)->MatrixNode & = default;
-		~MatrixNode() = default;
-	};
-
 	class SparseMatrix final {
+		struct MatrixNode final {
+			SparseVector Vector = {};
+			decltype(0_size) Index = 0;
+			MatrixNode() = default;
+			MatrixNode(SparseVector &&Vector, std::size_t Index) {
+				this->Vector = static_cast<SparseVector &&>(Vector);
+				this->Index = Index;
+			}
+			MatrixNode(const SparseVector &Vector, std::size_t Index) {
+				this->Vector = Vector;
+				this->Index = Index;
+			}
+			MatrixNode(MatrixNode &&OtherMatrixNode) :MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index } {}
+			MatrixNode(const MatrixNode &) = default;
+			auto &operator=(MatrixNode &&OtherMatrixNode) {
+				if (this != &OtherMatrixNode)
+					new(this) MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index };
+				return *this;
+			}
+			auto operator=(const MatrixNode &)->MatrixNode & = default;
+			~MatrixNode() = default;
+		};
 		using Container = List<MatrixNode>;
 		Container *ContainerPointer = nullptr;
 		decltype(0_size) Row = 0;
