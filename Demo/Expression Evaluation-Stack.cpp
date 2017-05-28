@@ -2,32 +2,33 @@
 #include "Stack.hpp"
 #include "List.hpp"
 
-union DataSet final {
-	decltype(0.) Operand = 0.;
-	decltype('0') Operator;
-	DataSet() = default;
-	DataSet(double Value) {
-		Operand = Value;
-	}
-	DataSet(char Value) {
-		Operator = Value;
-	}
-	DataSet(const DataSet &) = default;
-	DataSet(DataSet &&) = default;
-	auto operator=(const DataSet &)->DataSet & = default;
-	auto operator=(DataSet &&)->DataSet & = default;
-	~DataSet() = default;
-};
-
-struct Node final {
+struct ExpressionNode final {
+private:
+	union DataSet final {
+		decltype(0.) Operand = 0.;
+		decltype('0') Operator;
+		DataSet() = default;
+		DataSet(double Value) {
+			Operand = Value;
+		}
+		DataSet(char Value) {
+			Operator = Value;
+		}
+		DataSet(const DataSet &) = default;
+		DataSet(DataSet &&) = default;
+		auto operator=(const DataSet &)->DataSet & = default;
+		auto operator=(DataSet &&)->DataSet & = default;
+		~DataSet() = default;
+	};
+public:
 	DataSet Value = {};
 	decltype(0) Precedence = 0;
 	decltype(false) IsOperator = false;
-	Node() = default;
-	Node(double Value) {
+	ExpressionNode() = default;
+	ExpressionNode(double Value) {
 		this->Value = Value;
 	}
-	Node(char Value) {
+	ExpressionNode(char Value) {
 		auto GetPrecedence = [&]() {
 			switch (Value) {
 			case '+': case '-':
@@ -42,55 +43,55 @@ struct Node final {
 		IsOperator = true;
 		Precedence = GetPrecedence();
 	}
-	Node(const Node &) = default;
-	Node(Node &&) = default;
-	auto operator=(const Node &)->Node & = default;
-	auto operator=(Node &&)->Node & = default;
-	~Node() = default;
+	ExpressionNode(const ExpressionNode &) = default;
+	ExpressionNode(ExpressionNode &&) = default;
+	auto operator=(const ExpressionNode &)->ExpressionNode & = default;
+	auto operator=(ExpressionNode &&)->ExpressionNode & = default;
+	~ExpressionNode() = default;
 	auto operator==(char Value) const {
-		return this->Value.Operator == Value;
+		return IsOperator && this->Value.Operator == Value;
 	}
 	auto operator!=(char Value) const {
-		return this->Value.Operator != Value;
+		return !(*this == Value);
 	}
-	friend auto &operator<<(std::ostream &Output, const Node &Object) {
-		if (Object.IsOperator)
-			Output << Object.Value.Operator;
+	friend auto &operator<<(std::ostream &Output, const ExpressionNode &SomeExpressionNode) {
+		if (SomeExpressionNode.IsOperator)
+			Output << SomeExpressionNode.Value.Operator;
 		else
-			Output << Object.Value.Operand;
+			Output << SomeExpressionNode.Value.Operand;
 		return Output;
 	}
 };
 
 auto main()->int {
-	using Expression = StandardTemplateLibrary::List<Node>;
+	using Expression = StandardTemplateLibrary::List<ExpressionNode>;
 	auto InfixExpression = Expression{ '(', 12., '-', 8., ')', '/', 4., '+', 2., '*', 3. };
 	auto RPNExpression = Expression{};
 	auto GetRPNExpression = [&]() {
-		using ExpressionStack = StandardTemplateLibrary::Stack<Node, Expression>;
+		using ExpressionStack = StandardTemplateLibrary::Stack<ExpressionNode, Expression>;
 		auto OperatorStack = ExpressionStack{ '#' };
 		auto PopToRPNExpression = [&]() {
 			RPNExpression += OperatorStack.Top();
 			--OperatorStack;
 		};
-		auto OperandToRPNExpression = [&](auto &Object) {
-			RPNExpression += Object;
+		auto OperandToRPNExpression = [&](auto &Operand) {
+			RPNExpression += Operand;
 		};
-		auto OperatorToRPNExpression = [&](auto &Object) {
-			if (Object == '(')
-				OperatorStack += Object;
-			else if (Object == ')') {
+		auto OperatorToRPNExpression = [&](auto &Operator) {
+			if (Operator == '(')
+				OperatorStack += Operator;
+			else if (Operator == ')') {
 				while (OperatorStack.Top() != '(')
 					PopToRPNExpression();
 				--OperatorStack;
 			}
 			else
-				if (Object.Precedence > OperatorStack.Top().Precedence)
-					OperatorStack += Object;
+				if (Operator.Precedence > OperatorStack.Top().Precedence)
+					OperatorStack += Operator;
 				else {
-					while (OperatorStack.Size() > 1 && Object.Precedence <= OperatorStack.Top().Precedence)
+					while (OperatorStack.Size() > 1 && Operator.Precedence <= OperatorStack.Top().Precedence)
 						PopToRPNExpression();
-					OperatorStack += Object;
+					OperatorStack += Operator;
 				}
 		};
 		auto StackCleanup = [&]() {
@@ -107,30 +108,30 @@ auto main()->int {
 	auto EvaluateRPNExpression = [&]() {
 		using ExpressionStack = StandardTemplateLibrary::Stack<decltype(0.), StandardTemplateLibrary::List<decltype(0.)>>;
 		auto OperandStack = ExpressionStack{};
-		auto Evaluate = [&](auto &Object) {
-			auto Operation = [&](auto &&Operator) {
+		auto Evaluate = [&](auto Operator) {
+			auto ActualEvaluate = [&](auto &&Action) {
 				auto RightHandOperand = OperandStack.Top();
 				--OperandStack;
-				Operator(OperandStack.Top(), RightHandOperand);
+				Action(OperandStack.Top(), RightHandOperand);
 			};
-			switch (Object.Value.Operator) {
+			switch (Operator) {
 			case '+':
-				Operation([](auto &LeftHandOperand, auto RightHandOperand) {
+				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand += RightHandOperand;
 				});
 				break;
 			case '-':
-				Operation([](auto &LeftHandOperand, auto RightHandOperand) {
+				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand -= RightHandOperand;
 				});
 				break;
 			case '*':
-				Operation([](auto &LeftHandOperand, auto RightHandOperand) {
+				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand *= RightHandOperand;
 				});
 				break;
 			case '/':
-				Operation([](auto &LeftHandOperand, auto RightHandOperand) {
+				ActualEvaluate([](auto &LeftHandOperand, auto RightHandOperand) {
 					LeftHandOperand /= RightHandOperand;
 				});
 				break;
@@ -142,11 +143,11 @@ auto main()->int {
 			if (!x.IsOperator)
 				OperandStack += x.Value.Operand;
 			else
-				Evaluate(x);
+				Evaluate(x.Value.Operator);
 		return OperandStack.Top();
 	};
-	auto PrintExpression = [](auto &Object) {
-		for (auto &x : Object)
+	auto PrintExpression = [](auto &Expression) {
+		for (auto &x : Expression)
 			std::cout << x << ' ';
 		std::cout << std::endl;
 	};

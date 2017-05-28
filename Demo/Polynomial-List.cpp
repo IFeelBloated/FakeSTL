@@ -13,14 +13,14 @@ struct PolynomialTerm final {
 	auto operator=(PolynomialTerm &&)->PolynomialTerm & = default;
 	auto operator=(const PolynomialTerm &)->PolynomialTerm & = default;
 	~PolynomialTerm() = default;
-	auto operator*(const PolynomialTerm &Operand) const {
-		return PolynomialTerm{ Coefficient * Operand.Coefficient, Degree + Operand.Degree };
+	auto operator*(const PolynomialTerm &RightHandSideTerm) const {
+		return PolynomialTerm{ Coefficient * RightHandSideTerm.Coefficient, Degree + RightHandSideTerm.Degree };
 	}
-	auto operator<(const PolynomialTerm &Operand) const {
-		if (Degree != Operand.Degree)
-			return Degree < Operand.Degree;
+	auto operator<(const PolynomialTerm &RightHandSideTerm) const {
+		if (Degree != RightHandSideTerm.Degree)
+			return Degree < RightHandSideTerm.Degree;
 		else
-			return Coefficient < Operand.Coefficient;
+			return Coefficient < RightHandSideTerm.Coefficient;
 	}
 };
 
@@ -28,35 +28,35 @@ auto main()->int {
 	using Polynomial = StandardTemplateLibrary::List<PolynomialTerm>;
 	auto PolynomialA = Polynomial{ { 1., 0. },{ 1., 1. } };
 	auto PolynomialB = Polynomial{ { 1., 0. },{ 2., 1. },{ 6., 2. } };
-	auto SimplifyPolynomial = [](auto &Object) {
+	auto SimplifyPolynomial = [](auto &Expression) {
 		auto CombineLikeTerms = [&]() {
 			auto Combine = [&]() {
-				auto Cursor = Object.begin();
+				auto Cursor = Expression.begin();
 				auto GetNext = [](auto Iterator) {
 					return ++Iterator;
 				};
-				while (GetNext(Cursor) != Object.end())
+				while (GetNext(Cursor) != Expression.end())
 					if (Cursor->Degree == GetNext(Cursor)->Degree) {
 						Cursor->Coefficient += GetNext(Cursor)->Coefficient;
-						Object.Erase(GetNext(Cursor));
+						Expression.Erase(GetNext(Cursor));
 					}
 					else
 						++Cursor;
 			};
-			Object.Sort();
+			Expression.Sort();
 			Combine();
 		};
 		auto Cleanup = [&]() {
-			auto Cursor = Object.begin();
-			while (Cursor != Object.end())
+			auto Cursor = Expression.begin();
+			while (Cursor != Expression.end())
 				if (Cursor->Coefficient == 0.)
-					Cursor = Object.Erase(Cursor);
+					Cursor = Expression.Erase(Cursor);
 				else
 					++Cursor;
 		};
 		CombineLikeTerms();
 		Cleanup();
-		Object.Reverse();
+		Expression.Reverse();
 	};
 	auto MultiplyPolynomial = [&]() {
 		auto Result = Polynomial{};
@@ -66,8 +66,8 @@ auto main()->int {
 		SimplifyPolynomial(Result);
 		return Result;
 	};
-	auto PrintPolynomial = [](auto &&Object) {
-		auto &LastPolynomialTerm = *--Object.end();
+	auto PrintPolynomial = [](auto &&Expression) {
+		auto &LastPolynomialTerm = *--Expression.end();
 		auto PrintCoefficient = [](auto &Value) {
 			if (Value.Coefficient != 1.)
 				std::cout << Value.Coefficient;
@@ -84,10 +84,10 @@ auto main()->int {
 			else
 				return;
 		};
-		if (Object.Empty())
+		if (Expression.Empty())
 			std::cout << "0";
 		else
-			for (auto &x : Object) {
+			for (auto &x : Expression) {
 				PrintCoefficient(x);
 				PrintIndeterminate(x);
 				if (&x != &LastPolynomialTerm)

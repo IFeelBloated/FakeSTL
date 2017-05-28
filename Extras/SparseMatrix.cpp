@@ -20,65 +20,73 @@ namespace StandardTemplateLibrary::Extras {
 
 	class SparseVector final {
 		using Container = List<VectorNode>;
-		Container *Pointer = nullptr;
+		Container *ContainerPointer = nullptr;
 		decltype(0_size) Dimension = 0;
 	public:
 		SparseVector() {
-			Pointer = new Container{};
+			ContainerPointer = new Container{};
 		}
 		SparseVector(std::initializer_list<decltype(0.)> Initialization) :SparseVector{} {
 			auto Cursor = 0_size;
 			auto Compress = [this]() {
-				auto Cursor = Pointer->begin();
-				while (Cursor != Pointer->end())
+				auto Cursor = ContainerPointer->begin();
+				while (Cursor != ContainerPointer->end())
 					if (Cursor->Value == 0.)
-						Cursor = Pointer->Erase(Cursor);
+						Cursor = ContainerPointer->Erase(Cursor);
 					else
 						++Cursor;
 			};
 			for (auto x : Initialization) {
-				*Pointer += {x, Cursor};
+				*ContainerPointer += {x, Cursor};
 				++Cursor;
 			}
-			Dimension = Pointer->Size();
+			Dimension = ContainerPointer->Size();
 			Compress();
 		}
-		auto &operator=(SparseVector &&Object) {
-			if (this != &Object) {
-				auto TemporaryPointer = Pointer;
-				Pointer = Object.Pointer;
-				Object.Pointer = TemporaryPointer;
-				Dimension = Object.Dimension;
+		auto &operator=(SparseVector &&OtherSparseVector) {
+			if (this != &OtherSparseVector) {
+				auto TemporaryPointer = ContainerPointer;
+				ContainerPointer = OtherSparseVector.ContainerPointer;
+				OtherSparseVector.ContainerPointer = TemporaryPointer;
+				Dimension = OtherSparseVector.Dimension;
 			}
 			return *this;
 		}
-		auto &operator=(const SparseVector &Object) {
-			if (this != &Object) {
-				*Pointer = *Object.Pointer;
-				Dimension = Object.Dimension;
+		auto &operator=(const SparseVector &OtherSparseVector) {
+			if (this != &OtherSparseVector) {
+				*ContainerPointer = *OtherSparseVector.ContainerPointer;
+				Dimension = OtherSparseVector.Dimension;
 			}
 			return *this;
 		}
-		SparseVector(SparseVector &&Object) {
-			*this = static_cast<SparseVector &&>(Object);
+		SparseVector(SparseVector &&OtherSparseVector) {
+			*this = static_cast<SparseVector &&>(OtherSparseVector);
 		}
-		SparseVector(const SparseVector &Object) :SparseVector{} {
-			*this = Object;
+		SparseVector(const SparseVector &OtherSparseVector) :SparseVector{} {
+			*this = OtherSparseVector;
 		}
 		~SparseVector() {
-			delete Pointer;
+			delete ContainerPointer;
 		}
 		auto Empty() const {
-			return Pointer->Empty();
+			return ContainerPointer->Empty();
 		}
 		auto Size() const {
 			return Dimension;
 		}
-		auto &Data() {
-			return *Pointer;
+		auto begin() {
+			return ContainerPointer->begin();
 		}
-		const auto &Data() const {
-			return *Pointer;
+		auto begin() const {
+			auto ConstantContainerPointer = const_cast<const Container *>(ContainerPointer);
+			return ConstantContainerPointer->begin();
+		}
+		auto end() {
+			return ContainerPointer->end();
+		}
+		auto end() const {
+			auto ConstantContainerPointer = const_cast<const Container *>(ContainerPointer);
+			return ConstantContainerPointer->end();
 		}
 		static auto NullVector(std::size_t Dimension) {
 			auto Vector = SparseVector{};
@@ -86,64 +94,64 @@ namespace StandardTemplateLibrary::Extras {
 			return Vector;
 		}
 		auto &operator*=(double Value) {
-			for (auto &x : *Pointer)
+			for (auto &x : *ContainerPointer)
 				x.Value *= Value;
 			return *this;
 		}
-		auto &operator+=(const SparseVector &Object) {
+		auto &operator+=(const SparseVector &RightHandSideVector) {
 			auto Result = NullVector(Dimension);
-			auto LeftHandSideCursor = Pointer->begin();
-			auto RightHandSideCursor = Object.Pointer->begin();
+			auto LeftHandSideCursor = ContainerPointer->begin();
+			auto RightHandSideCursor = RightHandSideVector.ContainerPointer->begin();
 			auto LeftHandSideVectorActivated = [&](auto Cursor) {
-				return LeftHandSideCursor != Pointer->end() && LeftHandSideCursor->Index == Cursor;
+				return LeftHandSideCursor != ContainerPointer->end() && LeftHandSideCursor->Index == Cursor;
 			};
 			auto RightHandSideVectorActivated = [&](auto Cursor) {
-				return RightHandSideCursor != Object.Pointer->end() && RightHandSideCursor->Index == Cursor;
+				return RightHandSideCursor != RightHandSideVector.ContainerPointer->end() && RightHandSideCursor->Index == Cursor;
 			};
 			auto AddUpAndShiftTheSumToResult = [&]() {
 				auto Value = LeftHandSideCursor->Value + RightHandSideCursor->Value;
 				if (Value != 0.)
-					*Result.Pointer += { Value, LeftHandSideCursor->Index };
+					*Result.ContainerPointer += { Value, LeftHandSideCursor->Index };
 				++LeftHandSideCursor;
 				++RightHandSideCursor;
 			};
-			auto ShiftTheLeftHandSideElementToResult = [&] {
-				*Result.Pointer += *LeftHandSideCursor;
+			auto ShiftLeftHandSideElementToResult = [&] {
+				*Result.ContainerPointer += *LeftHandSideCursor;
 				++LeftHandSideCursor;
 			};
-			auto ShiftTheRightHandSideElementToResult = [&] {
-				*Result.Pointer += *RightHandSideCursor;
+			auto ShiftRightHandSideElementToResult = [&] {
+				*Result.ContainerPointer += *RightHandSideCursor;
 				++RightHandSideCursor;
 			};
 			for (auto Cursor = 0_size; Cursor < Dimension; ++Cursor)
 				if (LeftHandSideVectorActivated(Cursor) && RightHandSideVectorActivated(Cursor))
 					AddUpAndShiftTheSumToResult();
 				else if (LeftHandSideVectorActivated(Cursor))
-					ShiftTheLeftHandSideElementToResult();
+					ShiftLeftHandSideElementToResult();
 				else if (RightHandSideVectorActivated(Cursor))
-					ShiftTheRightHandSideElementToResult();
+					ShiftRightHandSideElementToResult();
 			*this = static_cast<SparseVector &&>(Result);
 			return *this;
 		}
-		friend auto operator*(double Value, SparseVector &&Object) {
-			return Object *= Value;
+		friend auto operator*(double Value, SparseVector &&SomeVector) {
+			return SomeVector *= Value;
 		}
-		friend auto operator*(double Value, const SparseVector &Object) {
-			return SparseVector{ Object } *= Value;
+		friend auto operator*(double Value, const SparseVector &SomeVector) {
+			return SparseVector{ SomeVector } *= Value;
 		}
-		friend auto operator*(SparseVector &&Object, double Value) {
-			return Object *= Value;
+		friend auto operator*(SparseVector &&SomeVector, double Value) {
+			return SomeVector *= Value;
 		}
-		friend auto operator*(const SparseVector &Object, double Value) {
-			return SparseVector{ Object } *= Value;
+		friend auto operator*(const SparseVector &SomeVector, double Value) {
+			return SparseVector{ SomeVector } *= Value;
 		}
-		friend auto &operator<<(std::ostream &Output, const SparseVector &Object) {
-			auto Cursor = Object.Pointer->begin();
+		friend auto &operator<<(std::ostream &Output, const SparseVector &SomeVector) {
+			auto Cursor = SomeVector.ContainerPointer->begin();
 			auto PrintRealNumberInFormat = [&](auto Value) {
 				Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << Value << " ";
 			};
-			for (auto Position = 0_size; Position < Object.Dimension; ++Position)
-				if (Cursor != Object.Pointer->end() && Cursor->Index == Position) {
+			for (auto Position = 0_size; Position < SomeVector.Dimension; ++Position)
+				if (Cursor != SomeVector.ContainerPointer->end() && Cursor->Index == Position) {
 					PrintRealNumberInFormat(Cursor->Value);
 					++Cursor;
 				}
@@ -154,22 +162,22 @@ namespace StandardTemplateLibrary::Extras {
 	};
 
 	struct MatrixNode final {
-		SparseVector Value = {};
+		SparseVector Vector = {};
 		decltype(0_size) Index = 0;
 		MatrixNode() = default;
 		MatrixNode(SparseVector &&Value, std::size_t Index) {
-			this->Value = static_cast<SparseVector &&>(Value);
+			this->Vector = static_cast<SparseVector &&>(Value);
 			this->Index = Index;
 		}
 		MatrixNode(const SparseVector &Value, std::size_t Index) {
-			this->Value = Value;
+			this->Vector = Value;
 			this->Index = Index;
 		}
-		MatrixNode(MatrixNode &&Object) :MatrixNode{ static_cast<SparseVector &&>(Object.Value), Object.Index } {}
-		MatrixNode(const MatrixNode &Object) = default;
-		auto &operator=(MatrixNode &&Object) {
-			if (this != &Object)
-				new(this) MatrixNode{ static_cast<SparseVector &&>(Object.Value), Object.Index };
+		MatrixNode(MatrixNode &&OtherMatrixNode) :MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index } {}
+		MatrixNode(const MatrixNode &) = default;
+		auto &operator=(MatrixNode &&OtherMatrixNode) {
+			if (this != &OtherMatrixNode)
+				new(this) MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index };
 			return *this;
 		}
 		auto operator=(const MatrixNode &)->MatrixNode & = default;
@@ -178,57 +186,57 @@ namespace StandardTemplateLibrary::Extras {
 
 	class SparseMatrix final {
 		using Container = List<MatrixNode>;
-		Container *Pointer = nullptr;
+		Container *ContainerPointer = nullptr;
 		decltype(0_size) Row = 0;
 		decltype(0_size) Column = 0;
 	public:
 		SparseMatrix() {
-			Pointer = new Container{};
+			ContainerPointer = new Container{};
 		}
 		SparseMatrix(std::initializer_list<SparseVector> Initialization) :SparseMatrix{} {
 			auto Cursor = 0_size;
 			auto Compress = [this]() {
-				auto Cursor = Pointer->begin();
-				while (Cursor != Pointer->end())
-					if (Cursor->Value.Empty())
-						Cursor = Pointer->Erase(Cursor);
+				auto Cursor = ContainerPointer->begin();
+				while (Cursor != ContainerPointer->end())
+					if (Cursor->Vector.Empty())
+						Cursor = ContainerPointer->Erase(Cursor);
 					else
 						++Cursor;
 			};
 			for (auto &x : Initialization) {
-				*Pointer += {x, Cursor};
+				*ContainerPointer += {x, Cursor};
 				++Cursor;
 			}
-			Column = Pointer->begin()->Value.Size();
-			Row = Pointer->Size();
+			Column = ContainerPointer->begin()->Vector.Size();
+			Row = ContainerPointer->Size();
 			Compress();
 		}
-		auto &operator=(SparseMatrix &&Object) {
-			if (this != &Object) {
-				auto TemporaryPointer = Pointer;
-				Pointer = Object.Pointer;
-				Object.Pointer = TemporaryPointer;
-				Row = Object.Row;
-				Column = Object.Column;
+		auto &operator=(SparseMatrix &&OtherSparseMatrix) {
+			if (this != &OtherSparseMatrix) {
+				auto TemporaryPointer = ContainerPointer;
+				ContainerPointer = OtherSparseMatrix.ContainerPointer;
+				OtherSparseMatrix.ContainerPointer = TemporaryPointer;
+				Row = OtherSparseMatrix.Row;
+				Column = OtherSparseMatrix.Column;
 			}
 			return *this;
 		}
-		auto &operator=(const SparseMatrix &Object) {
-			if (this != &Object) {
-				*Pointer = *Object.Pointer;
-				Row = Object.Row;
-				Column = Object.Column;
+		auto &operator=(const SparseMatrix &OtherSparseMatrix) {
+			if (this != &OtherSparseMatrix) {
+				*ContainerPointer = *OtherSparseMatrix.ContainerPointer;
+				Row = OtherSparseMatrix.Row;
+				Column = OtherSparseMatrix.Column;
 			}
 			return *this;
 		}
-		SparseMatrix(SparseMatrix &&Object) {
-			*this = static_cast<SparseMatrix &&>(Object);
+		SparseMatrix(SparseMatrix &&OtherSparseMatrix) {
+			*this = static_cast<SparseMatrix &&>(OtherSparseMatrix);
 		}
-		SparseMatrix(const SparseMatrix &Object) :SparseMatrix{} {
-			*this = Object;
+		SparseMatrix(const SparseMatrix &OtherSparseMatrix) :SparseMatrix{} {
+			*this = OtherSparseMatrix;
 		}
 		~SparseMatrix() {
-			delete Pointer;
+			delete ContainerPointer;
 		}
 		static auto ZeroMatrix(std::size_t Row, std::size_t Column) {
 			auto Matrix = SparseMatrix{};
@@ -236,59 +244,59 @@ namespace StandardTemplateLibrary::Extras {
 			Matrix.Column = Column;
 			return Matrix;
 		}
-		auto &operator*=(const SparseMatrix &Object) {
-			auto RightHandSideOperandRowTable = reinterpret_cast<SparseVector **>(alloca(Object.Row * sizeof(void *)));
-			auto Result = ZeroMatrix(Row, Object.Column);
+		auto &operator*=(const SparseMatrix &RightHandSideMatrix) {
+			auto RightHandSideMatrixRowTable = reinterpret_cast<SparseVector **>(alloca(RightHandSideMatrix.Row * sizeof(void *)));
+			auto Result = ZeroMatrix(Row, RightHandSideMatrix.Column);
 			auto InitializeRowTable = [&]() {
-				auto Cursor = Object.Pointer->begin();
+				auto Cursor = RightHandSideMatrix.ContainerPointer->begin();
 				auto RecordAndMoveOn = [&](auto Position) {
 					auto GetNext = [](auto Iterator) {
 						return ++Iterator;
 					};
-					RightHandSideOperandRowTable[Position] = &Cursor->Value;
-					if (GetNext(Cursor) != Object.Pointer->end())
+					RightHandSideMatrixRowTable[Position] = &Cursor->Vector;
+					if (GetNext(Cursor) != RightHandSideMatrix.ContainerPointer->end())
 						++Cursor;
 				};
-				for (auto Position = 0_size; Position < Object.Row; ++Position)
+				for (auto Position = 0_size; Position < RightHandSideMatrix.Row; ++Position)
 					if (Cursor->Index == Position)
 						RecordAndMoveOn(Position);
 					else
-						RightHandSideOperandRowTable[Position] = nullptr;
+						RightHandSideMatrixRowTable[Position] = nullptr;
 			};
 			auto RowWiseMultiplication = [&](auto &Vector) {
-				auto Result = SparseVector::NullVector(Object.Column);
-				for (auto &x : Vector.Data())
-					if (RightHandSideOperandRowTable[x.Index] != nullptr) {
-						auto &RightHandSideRowVector = *RightHandSideOperandRowTable[x.Index];
+				auto Result = SparseVector::NullVector(RightHandSideMatrix.Column);
+				for (auto &x : Vector)
+					if (RightHandSideMatrixRowTable[x.Index] != nullptr) {
+						auto &RightHandSideRowVector = *RightHandSideMatrixRowTable[x.Index];
 						Result += x.Value * RightHandSideRowVector;
 					}
 				return Result;
 			};
 			InitializeRowTable();
-			for (auto &x : *Pointer) {
-				auto CurrentRow = RowWiseMultiplication(x.Value);
+			for (auto &x : *ContainerPointer) {
+				auto CurrentRow = RowWiseMultiplication(x.Vector);
 				if (!CurrentRow.Empty())
-					*Result.Pointer += { static_cast<SparseVector &&>(CurrentRow), x.Index };
+					*Result.ContainerPointer += { static_cast<SparseVector &&>(CurrentRow), x.Index };
 			}
 			*this = static_cast<SparseMatrix &&>(Result);
 			return *this;
 		}
-		friend auto operator*(const SparseMatrix &ObjectA, const SparseMatrix &ObjectB) {
-			return SparseMatrix{ ObjectA } *= ObjectB;
+		friend auto operator*(const SparseMatrix &MatrixA, const SparseMatrix &MatrixB) {
+			return SparseMatrix{ MatrixA } *= MatrixB;
 		}
-		friend auto operator*(SparseMatrix &&ObjectA, const SparseMatrix &ObjectB) {
-			return ObjectA *= ObjectB;
+		friend auto operator*(SparseMatrix &&MatrixA, const SparseMatrix &MatrixB) {
+			return MatrixA *= MatrixB;
 		}
-		friend auto &operator<<(std::ostream &Output, const SparseMatrix &Object) {
-			auto Cursor = Object.Pointer->begin();
+		friend auto &operator<<(std::ostream &Output, const SparseMatrix &SomeMatrix) {
+			auto Cursor = SomeMatrix.ContainerPointer->begin();
 			auto PrintNullVector = [&]() {
-				for (auto i = 0_size; i < Object.Column; ++i)
+				for (auto i = 0_size; i < SomeMatrix.Column; ++i)
 					Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << 0. << " ";
 				Output << std::endl;
 			};
-			for (auto Position = 0_size; Position < Object.Row; ++Position)
-				if (Cursor != Object.Pointer->end() && Cursor->Index == Position) {
-					Output << Cursor->Value << std::endl;
+			for (auto Position = 0_size; Position < SomeMatrix.Row; ++Position)
+				if (Cursor != SomeMatrix.ContainerPointer->end() && Cursor->Index == Position) {
+					Output << Cursor->Vector << std::endl;
 					++Cursor;
 				}
 				else
