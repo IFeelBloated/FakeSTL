@@ -21,6 +21,7 @@ the main problem with the existing STL implementations for this purpose is the r
 ## Algorithms
 - *[Merge Sort](https://en.wikipedia.org/wiki/Merge_sort)*: StandardTemplateLibrary::List::Sort()
 - *[Knuth–Morris–Pratt Algorithm](https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm)*: StandardTemplateLibrary::BasicString::Find(...)
+- *[Quicksort (Hoare partition scheme)](https://en.wikipedia.org/wiki/Quicksort)*: StandardTemplateLibrary::Sort(...)
 
 ## Demonstrations
 - *Polynomial Multiplication*: Demo/Polynomial-List.cpp
