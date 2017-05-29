@@ -13,7 +13,7 @@ namespace StandardTemplateLibrary {
 			auto LocatePartitionPosition = [&]() {
 				while (*ForwardCursor < Pivot)
 					++ForwardCursor;
-				while (*BackwardCursor > Pivot)
+				while (Pivot < *BackwardCursor)
 					--BackwardCursor;
 				if (ForwardCursor >= BackwardCursor)
 					PartitionPositionFound = true;
