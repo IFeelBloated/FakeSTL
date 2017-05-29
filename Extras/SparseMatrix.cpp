@@ -114,11 +114,11 @@ namespace StandardTemplateLibrary::Extras {
 				++LeftHandSideCursor;
 				++RightHandSideCursor;
 			};
-			auto ShiftLeftHandSideElementToResult = [&] {
+			auto ShiftTheLeftHandSideElementToResult = [&] {
 				*Result.ContainerPointer += *LeftHandSideCursor;
 				++LeftHandSideCursor;
 			};
-			auto ShiftRightHandSideElementToResult = [&] {
+			auto ShiftTheRightHandSideElementToResult = [&] {
 				*Result.ContainerPointer += *RightHandSideCursor;
 				++RightHandSideCursor;
 			};
@@ -126,9 +126,9 @@ namespace StandardTemplateLibrary::Extras {
 				if (LeftHandSideVectorActivated(Cursor) && RightHandSideVectorActivated(Cursor))
 					AddUpAndShiftTheSumToResult();
 				else if (LeftHandSideVectorActivated(Cursor))
-					ShiftLeftHandSideElementToResult();
+					ShiftTheLeftHandSideElementToResult();
 				else if (RightHandSideVectorActivated(Cursor))
-					ShiftRightHandSideElementToResult();
+					ShiftTheRightHandSideElementToResult();
 			*this = static_cast<SparseVector &&>(Result);
 			return *this;
 		}
@@ -288,7 +288,7 @@ namespace StandardTemplateLibrary::Extras {
 		friend auto &operator<<(std::ostream &Output, const SparseMatrix &SomeMatrix) {
 			auto Cursor = SomeMatrix.ContainerPointer->begin();
 			auto PrintNullVector = [&]() {
-				for (auto i = 0_size; i < SomeMatrix.Column; ++i)
+				for (auto Position = 0_size; Position < SomeMatrix.Column; ++Position)
 					Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << 0. << " ";
 				Output << std::endl;
 			};

@@ -28,4 +28,4 @@ the main problem with the existing STL implementations for this purpose is the r
 - *Expression Evaluation*: Demo/Expression Evaluation-Stack.cpp
 
 ## Extras
-- Sparse Matrix Multiplication: Extras/SparseMatrix.cpp
+- *[Sparse Matrix Multiplication](https://en.wikipedia.org/wiki/Sparse_matrix#List_of_lists_.28LIL.29)*: Extras/SparseMatrix.cpp

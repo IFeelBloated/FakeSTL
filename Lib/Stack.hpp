@@ -3,70 +3,70 @@
 #include "Deque.hpp"
 
 namespace StandardTemplateLibrary {
-	template<typename T, typename Container = Deque<T>>
+	template<typename GenericType, typename Container = Deque<GenericType>>
 	class Stack final {
-		Container *Pointer = nullptr;
+		Container *ContainerPointer = nullptr;
 	public:
 		Stack() {
-			Pointer = new Container{};
+			ContainerPointer = new Container{};
 		}
-		Stack(std::initializer_list<T> Initialization) {
-			Pointer = new Container{ Initialization };
+		Stack(std::initializer_list<GenericType> Initialization) {
+			ContainerPointer = new Container{ Initialization };
 		}
-		Stack(Stack &&Object) {
-			*this = static_cast<Stack &&>(Object);
+		Stack(Stack &&OtherStack) {
+			*this = static_cast<Stack &&>(OtherStack);
 		}
-		Stack(const Stack &Object) :Stack{} {
-			*this = Object;
+		Stack(const Stack &OtherStack) :Stack{} {
+			*this = OtherStack;
 		}
-		auto &operator=(Stack &&Object) {
-			if (this != &Object) {
-				auto TemporaryPointer = Pointer;
-				Pointer = Object.Pointer;
-				Object.Pointer = TemporaryPointer;
+		auto &operator=(Stack &&OtherStack) {
+			if (this != &OtherStack) {
+				auto TemporaryPointer = ContainerPointer;
+				ContainerPointer = OtherStack.ContainerPointer;
+				OtherStack.ContainerPointer = TemporaryPointer;
 			}
 			return *this;
 		}
-		auto &operator=(const Stack &Object) {
-			if (this != &Object)
-				*Pointer = *Object.Pointer;
+		auto &operator=(const Stack &OtherStack) {
+			if (this != &OtherStack)
+				*ContainerPointer = *OtherStack.ContainerPointer;
 			return *this;
 		}
 		~Stack() {
-			delete Pointer;
+			delete ContainerPointer;
 		}
 		auto &Top() {
-			return *--Pointer->end();
+			return *--ContainerPointer->end();
 		}
 		const auto &Top() const {
-			return *--Pointer->end();
+			return *--ContainerPointer->end();
 		}
-		auto &operator+=(T &&Object) {
-			Pointer->PushBack(static_cast<T &&>(Object));
+		auto &operator+=(GenericType &&SomeElement) {
+			ContainerPointer->PushBack(static_cast<GenericType &&>(SomeElement));
 			return *this;
 		}
-		auto &operator+=(const T &Object) {
-			Pointer->PushBack(Object);
+		auto &operator+=(const GenericType &SomeElement) {
+			ContainerPointer->PushBack(SomeElement);
 			return *this;
 		}
 		auto &operator--() {
-			Pointer->PopBack();
+			ContainerPointer->PopBack();
 			return *this;
 		}
-		auto Push(T &&Object) {
-			*this += static_cast<T &&>(Object);
+		auto Push(GenericType &&SomeElement) {
+			*this += static_cast<GenericType &&>(SomeElement);
 		}
-		auto Push(const T &Object) {
-			*this += Object;
+		auto Push(const GenericType &SomeElement) {
+			*this += SomeElement;
 		}
 		auto Pop() {
 			--*this;
 		}
 		auto Empty() const {
-			return Pointer->Empty();
+			return ContainerPointer->Empty();
 		}
 		auto Size() const {
-			return Pointer->Size();
+			return ContainerPointer->Size();
 		}
 	};
 }

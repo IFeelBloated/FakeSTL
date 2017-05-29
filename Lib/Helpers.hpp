@@ -10,7 +10,7 @@
 
 #if defined(_MSC_VER)
 #include <malloc.h>
-#elif defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
+#elif defined(__GNUC__) || defined(__GNUG__)
 #include <alloca.h>
 #endif
 

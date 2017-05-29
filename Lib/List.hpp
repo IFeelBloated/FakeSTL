@@ -2,139 +2,131 @@
 #include "Helpers.hpp"
 
 namespace StandardTemplateLibrary {
-	template<typename T>
-	struct ListNode final {
-		T *Value = nullptr;
-		ListNode *Next = nullptr;
-		ListNode *Previous = nullptr;
-		ListNode() = default;
-		ListNode(const T &Object) {
-			Value = new T{ Object };
-		}
-		ListNode(T &&Object) {
-			Value = new T{ static_cast<T &&>(Object) };
-		}
-		ListNode(const ListNode &) = delete;
-		ListNode(ListNode &&) = delete;
-		auto &operator=(const ListNode &) = delete;
-		auto &operator=(ListNode &&) = delete;
-		~ListNode() {
-			delete Value;
-		}
-	};
-
-	template<typename T>
-	struct ListIteratorBase {
-		ListNode<T> *Pointer = nullptr;
-		ListIteratorBase() = default;
-		ListIteratorBase(ListNode<T> *Item) {
-			Pointer = Item;
-		}
-		ListIteratorBase(const ListIteratorBase &) = default;
-		ListIteratorBase(ListIteratorBase &&) = default;
-		auto operator=(const ListIteratorBase &)->ListIteratorBase & = default;
-		auto operator=(ListIteratorBase &&)->ListIteratorBase & = default;
-		~ListIteratorBase() = default;
-		friend auto operator==(ListIteratorBase ObjectA, ListIteratorBase ObjectB) {
-			return ObjectA.Pointer == ObjectB.Pointer;
-		}
-		friend auto operator!=(ListIteratorBase ObjectA, ListIteratorBase ObjectB) {
-			return ObjectA.Pointer != ObjectB.Pointer;
-		}
-	};
-
-	template<typename T>
-	struct ListIterator final :public ListIteratorBase<T> {
-		using ListIteratorBase<T>::ListIteratorBase;
-		ListIterator(const ListIterator &) = default;
-		ListIterator(ListIterator &&) = default;
-		auto operator=(const ListIterator &)->ListIterator & = default;
-		auto operator=(ListIterator &&)->ListIterator & = default;
-		~ListIterator() = default;
-		auto &operator*() const {
-			return *this->Pointer->Value;
-		}
-		auto *operator->() const {
-			return this->Pointer->Value;
-		}
-		auto &operator++() {
-			this->Pointer = this->Pointer->Next;
-			return *this;
-		}
-		auto &operator--() {
-			this->Pointer = this->Pointer->Previous;
-			return *this;
-		}
-	};
-
-	template<typename T>
-	struct ConstantListIterator final :public ListIteratorBase<T> {
-		using ListIteratorBase<T>::ListIteratorBase;
-		ConstantListIterator(ListIterator<T> Item) {
-			this->Pointer = Item.Pointer;
-		}
-		ConstantListIterator(const ConstantListIterator &) = default;
-		ConstantListIterator(ConstantListIterator &&) = default;
-		auto operator=(const ConstantListIterator &)->ConstantListIterator & = default;
-		auto operator=(ConstantListIterator &&)->ConstantListIterator & = default;
-		~ConstantListIterator() = default;
-		const auto &operator*() const {
-			return *this->Pointer->Value;
-		}
-		const auto *operator->() const {
-			return this->Pointer->Value;
-		}
-		auto &operator++() {
-			this->Pointer = this->Pointer->Next;
-			return *this;
-		}
-		auto &operator--() {
-			this->Pointer = this->Pointer->Previous;
-			return *this;
-		}
-	};
-
-	template<typename T>
+	template<typename GenericType>
 	class List final {
-		ListNode<T> *Head = nullptr;
+		struct ListNode final {
+			GenericType *ElementPointer = nullptr;
+			ListNode *Next = nullptr;
+			ListNode *Previous = nullptr;
+			ListNode() = default;
+			ListNode(const GenericType &SomeElement) {
+				ElementPointer = new GenericType{ SomeElement };
+			}
+			ListNode(GenericType &&SomeElement) {
+				ElementPointer = new GenericType{ static_cast<GenericType &&>(SomeElement) };
+			}
+			ListNode(const ListNode &) = delete;
+			ListNode(ListNode &&) = delete;
+			auto &operator=(const ListNode &) = delete;
+			auto &operator=(ListNode &&) = delete;
+			~ListNode() {
+				delete ElementPointer;
+			}
+		};
+		struct IteratorBase {
+			ListNode *NodePointer = nullptr;
+			IteratorBase() = default;
+			IteratorBase(ListNode *SomeListNode) {
+				NodePointer = SomeListNode;
+			}
+			IteratorBase(const IteratorBase &) = default;
+			IteratorBase(IteratorBase &&) = default;
+			auto operator=(const IteratorBase &)->IteratorBase & = default;
+			auto operator=(IteratorBase &&)->IteratorBase & = default;
+			~IteratorBase() = default;
+			friend auto operator==(IteratorBase IteratorA, IteratorBase IteratorB) {
+				return IteratorA.NodePointer == IteratorB.NodePointer;
+			}
+			friend auto operator!=(IteratorBase IteratorA, IteratorBase IteratorB) {
+				return IteratorA.NodePointer != IteratorB.NodePointer;
+			}
+		};
+		struct Iterator final :public IteratorBase {
+			using IteratorBase::IteratorBase;
+			Iterator(const Iterator &) = default;
+			Iterator(Iterator &&) = default;
+			auto operator=(const Iterator &)->Iterator & = default;
+			auto operator=(Iterator &&)->Iterator & = default;
+			~Iterator() = default;
+			auto &operator*() const {
+				return *this->NodePointer->ElementPointer;
+			}
+			auto *operator->() const {
+				return this->NodePointer->ElementPointer;
+			}
+			auto &operator++() {
+				this->NodePointer = this->NodePointer->Next;
+				return *this;
+			}
+			auto &operator--() {
+				this->NodePointer = this->NodePointer->Previous;
+				return *this;
+			}
+		};
+		struct ConstantIterator final :public IteratorBase {
+			using IteratorBase::IteratorBase;
+			ConstantIterator(Iterator ModifiableIterator) {
+				this->NodePointer = ModifiableIterator.NodePointer;
+			}
+			ConstantIterator(const ConstantIterator &) = default;
+			ConstantIterator(ConstantIterator &&) = default;
+			auto operator=(const ConstantIterator &)->ConstantIterator & = default;
+			auto operator=(ConstantIterator &&)->ConstantIterator & = default;
+			~ConstantIterator() = default;
+			const auto &operator*() const {
+				return *this->NodePointer->ElementPointer;
+			}
+			const auto *operator->() const {
+				return this->NodePointer->ElementPointer;
+			}
+			auto &operator++() {
+				this->NodePointer = this->NodePointer->Next;
+				return *this;
+			}
+			auto &operator--() {
+				this->NodePointer = this->NodePointer->Previous;
+				return *this;
+			}
+		};
+		ListNode *Head = nullptr;
 		decltype(0_size) Length = 0;
-		auto InsertNode(ConstantListIterator<T> Position, ListNode<T> *NewNode) {
-			NewNode->Next = Position.Pointer;
-			NewNode->Previous = Position.Pointer->Previous;
-			Position.Pointer->Previous->Next = NewNode;
-			Position.Pointer->Previous = NewNode;
+		auto InsertConstructedNode(ConstantIterator Position, ListNode *ConstructedNode) {
+			ConstructedNode->Next = Position.NodePointer;
+			ConstructedNode->Previous = Position.NodePointer->Previous;
+			Position.NodePointer->Previous->Next = ConstructedNode;
+			Position.NodePointer->Previous = ConstructedNode;
 			++Length;
-			return ListIterator<T>{ NewNode };
+			return Iterator{ ConstructedNode };
 		}
 	public:
 		List() {
-			Head = new ListNode<T>{};
+			Head = new ListNode{};
 			Head->Next = Head;
 			Head->Previous = Head;
 		}
-		List(std::initializer_list<T> Initialization) :List{} {
+		List(std::initializer_list<GenericType> Initialization) :List{} {
 			for (auto &x : Initialization)
 				*this += x;
 		}
-		List(List &&Object) :List{} {
-			*this = static_cast<List &&>(Object);
+		List(List &&OtherList) :List{} {
+			*this = static_cast<List &&>(OtherList);
 		}
-		List(const List &Object) :List{} {
-			*this = Object;
+		List(const List &OtherList) :List{} {
+			*this = OtherList;
 		}
-		auto &operator=(List &&Object) {
-			if (this != &Object) {
+		auto &operator=(List &&OtherList) {
+			if (this != &OtherList) {
 				auto TemporaryPointer = Head;
-				Head = Object.Head;
-				Object.Head = TemporaryPointer;
-				Length = Object.Length;
+				Head = OtherList.Head;
+				OtherList.Head = TemporaryPointer;
+				Length = OtherList.Length;
 			}
 			return *this;
 		}
-		auto &operator=(const List &Object) {
-			if (this != &Object) {
+		auto &operator=(const List &OtherList) {
+			if (this != &OtherList) {
 				Clear();
-				for (auto &x : Object)
+				for (auto &x : OtherList)
 					*this += x;
 			}
 			return *this;
@@ -143,47 +135,31 @@ namespace StandardTemplateLibrary {
 			Clear();
 			delete Head;
 		}
-		auto PushFront(const T &Object) {
-			Insert(begin(), Object);
+		auto PushFront(const GenericType &SomeElement) {
+			Insert(begin(), SomeElement);
 		}
-		auto PushFront(T &&Object) {
-			Insert(begin(), static_cast<T &&>(Object));
+		auto PushFront(GenericType &&SomeElement) {
+			Insert(begin(), static_cast<GenericType &&>(SomeElement));
 		}
-		auto PushBack(const T &Object) {
-			*this += Object;
+		auto PushBack(const GenericType &SomeElement) {
+			*this += SomeElement;
 		}
-		auto PushBack(T &&Object) {
-			*this += static_cast<T &&>(Object);
+		auto PushBack(GenericType &&SomeElement) {
+			*this += static_cast<GenericType &&>(SomeElement);
 		}
-		auto &operator+=(const List &Object) {
-			*this += List{ Object };
+		auto &operator+=(const GenericType &SomeElement) {
+			Insert(end(), SomeElement);
 			return *this;
 		}
-		auto &operator+=(List &&Object) {
-			if (Object.Empty() == false) {
-				Head->Previous->Next = Object.Head->Next;
-				Object.Head->Next->Previous = Head->Previous;
-				Head->Previous = Object.Head->Previous;
-				Object.Head->Previous->Next = Head;
-				Object.Head->Next = Object.Head;
-				Object.Head->Previous = Object.Head;
-				Length += Object.Length;
-			}
+		auto &operator+=(GenericType &&SomeElement) {
+			Insert(end(), static_cast<GenericType &&>(SomeElement));
 			return *this;
 		}
-		auto &operator+=(const T &Object) {
-			Insert(end(), Object);
-			return *this;
+		auto Insert(ConstantIterator Position, const GenericType &SomeElement) {
+			return InsertConstructedNode(Position, new ListNode{ SomeElement });
 		}
-		auto &operator+=(T &&Object) {
-			Insert(end(), static_cast<T &&>(Object));
-			return *this;
-		}
-		auto Insert(ConstantListIterator<T> Position, const T &Object) {
-			return InsertNode(Position, new ListNode<T>{ Object });
-		}
-		auto Insert(ConstantListIterator<T> Position, T &&Object) {
-			return InsertNode(Position, new ListNode<T>{ static_cast<T &&>(Object) });
+		auto Insert(ConstantIterator Position, GenericType &&SomeElement) {
+			return InsertConstructedNode(Position, new ListNode{ static_cast<GenericType &&>(SomeElement) });
 		}
 		auto PopFront() {
 			Erase(begin());
@@ -195,29 +171,29 @@ namespace StandardTemplateLibrary {
 			Erase(--end());
 			return *this;
 		}
-		auto Erase(ConstantListIterator<T> Position) {
-			auto Pointer = Position.Pointer->Next;
-			Position.Pointer->Previous->Next = Position.Pointer->Next;
-			Position.Pointer->Next->Previous = Position.Pointer->Previous;
-			delete Position.Pointer;
+		auto Erase(ConstantIterator Position) {
+			auto NodeNextToTheErasedNode = Position.NodePointer->Next;
+			Position.NodePointer->Previous->Next = Position.NodePointer->Next;
+			Position.NodePointer->Next->Previous = Position.NodePointer->Previous;
+			delete Position.NodePointer;
 			--Length;
-			return ListIterator<T>{ Pointer };
+			return Iterator{ NodeNextToTheErasedNode };
 		}
 		auto Clear() {
-			for (auto i = begin(); i != end(); ++i)
-				Erase(i);
+			for (auto Cursor = begin(); Cursor != end(); ++Cursor)
+				Erase(Cursor);
 		}
 		auto begin() {
-			return ListIterator<T>{ Head->Next };
+			return Iterator{ Head->Next };
 		}
 		auto begin() const {
-			return ConstantListIterator<T>{ Head->Next };
+			return ConstantIterator{ Head->Next };
 		}
 		auto end() {
-			return ListIterator<T>{ Head };
+			return Iterator{ Head };
 		}
 		auto end() const {
-			return ConstantListIterator<T>{ Head };
+			return ConstantIterator{ Head };
 		}
 		auto Size() const {
 			return Length;
@@ -225,59 +201,59 @@ namespace StandardTemplateLibrary {
 		auto Empty() const {
 			return Length == 0;
 		}
-		auto Merge(List &Object) {
+		auto Merge(List &OtherList) {
 			auto TemporaryList = List{};
-			auto ShiftFirstNodeToTemporaryList = [&](auto &SourceList) {
+			auto ShiftTheFirstNodeToTemporaryList = [&](auto &SourceList) {
 				auto FirstNode = SourceList.Head->Next;
 				SourceList.Head->Next = FirstNode->Next;
 				FirstNode->Next->Previous = SourceList.Head;
 				--SourceList.Length;
-				TemporaryList.InsertNode(TemporaryList.end(), FirstNode);
+				TemporaryList.InsertConstructedNode(TemporaryList.end(), FirstNode);
 			};
 			auto MergeInOrder = [&]() {
-				while (!this->Empty() && !Object.Empty())
-					if (*this->begin() < *Object.begin())
-						ShiftFirstNodeToTemporaryList(*this);
+				while (!this->Empty() && !OtherList.Empty())
+					if (*this->begin() < *OtherList.begin())
+						ShiftTheFirstNodeToTemporaryList(*this);
 					else
-						ShiftFirstNodeToTemporaryList(Object);
+						ShiftTheFirstNodeToTemporaryList(OtherList);
 			};
 			auto ListCleanup = [&]() {
 				while (!this->Empty())
-					ShiftFirstNodeToTemporaryList(*this);
-				while (!Object.Empty())
-					ShiftFirstNodeToTemporaryList(Object);
+					ShiftTheFirstNodeToTemporaryList(*this);
+				while (!OtherList.Empty())
+					ShiftTheFirstNodeToTemporaryList(OtherList);
 			};
-			if (this != &Object) {
+			if (this != &OtherList) {
 				MergeInOrder();
 				ListCleanup();
 				*this = static_cast<List &&>(TemporaryList);
 			}
 		}
-		auto Merge(List &&Object) {
-			Merge(Object);
+		auto Merge(List &&OtherList) {
+			Merge(OtherList);
 		}
 		auto Sort() {
 			auto TemporaryListArray = List<List>{};
 			auto Initialize = [&]() {
-				auto WrapFirstNodeAsList = [this]() {
+				auto WrapTheFirstNodeAsList = [this]() {
 					auto TemporaryList = List{};
 					auto FirstNode = Head->Next;
 					Head->Next = FirstNode->Next;
 					FirstNode->Next->Previous = Head;
 					--Length;
-					TemporaryList.InsertNode(TemporaryList.end(), FirstNode);
+					TemporaryList.InsertConstructedNode(TemporaryList.end(), FirstNode);
 					return TemporaryList;
 				};
 				while (!Empty())
-					TemporaryListArray += WrapFirstNodeAsList();
+					TemporaryListArray += WrapTheFirstNodeAsList();
 			};
 			auto MergeSort = [&]() {
 				auto EndPosition = TemporaryListArray.Size() % 2 == 0 ? TemporaryListArray.end() : --TemporaryListArray.end();
 				auto GetNext = [](auto Iterator) {
 					return ++Iterator;
 				};
-				for (auto i = TemporaryListArray.begin(); i != EndPosition; i = TemporaryListArray.Erase(GetNext(i)))
-					i->Merge(*GetNext(i));
+				for (auto Cursor = TemporaryListArray.begin(); Cursor != EndPosition; Cursor = TemporaryListArray.Erase(GetNext(Cursor)))
+					Cursor->Merge(*GetNext(Cursor));
 			};
 			if (Length > 1) {
 				Initialize();
@@ -293,55 +269,13 @@ namespace StandardTemplateLibrary {
 				LastNode->Previous->Next = Head;
 				Head->Previous = LastNode->Previous;
 				--Length;
-				TemporaryList.InsertNode(TemporaryList.end(), LastNode);
+				TemporaryList.InsertConstructedNode(TemporaryList.end(), LastNode);
 			};
 			if (Length > 1) {
 				while (!Empty())
 					ShiftLastNodeToTemporaryList();
 				*this = static_cast<List &&>(TemporaryList);
 			}
-		}
-		friend auto operator+(List &&ObjectA, List &&ObjectB) {
-			return ObjectA += static_cast<List &&>(ObjectB);
-		}
-		friend auto operator+(List &&ObjectA, const List &ObjectB) {
-			return ObjectA += ObjectB;
-		}
-		friend auto operator+(const List &ObjectA, List &&ObjectB) {
-			return List{ ObjectA } + static_cast<List &&>(ObjectB);
-		}
-		friend auto operator+(const List &ObjectA, const List &ObjectB) {
-			return List{ ObjectA } + List{ ObjectB };
-		}
-		friend auto operator+(List &&Object, T &&Element) {
-			return Object += static_cast<T &&>(Element);
-		}
-		friend auto operator+(T &&Element, List &&Object) {
-			Object.PushFront(static_cast<T &&>(Element));
-			return Object;
-		}
-		friend auto operator+(List &&Object, const T &Element) {
-			return Object += Element;
-		}
-		friend auto operator+(const T &Element, List &&Object) {
-			Object.PushFront(Element);
-			return Object;
-		}
-		friend auto operator+(const List &Object, T &&Element) {
-			return List{ Object } += static_cast<T &&>(Element);
-		}
-		friend auto operator+(T &&Element, const List &Object) {
-			auto TemporaryObject = List{ Object };
-			TemporaryObject.PushFront(static_cast<T &&>(Element));
-			return TemporaryObject;
-		}
-		friend auto operator+(const List &Object, const T &Element) {
-			return List{ Object } += Element;
-		}
-		friend auto operator+(const T &Element, const List &Object) {
-			auto TemporaryObject = List{ Object };
-			TemporaryObject.PushFront(Element);
-			return TemporaryObject;
 		}
 	};
 }

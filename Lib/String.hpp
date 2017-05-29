@@ -2,77 +2,68 @@
 #include "Helpers.hpp"
 
 namespace StandardTemplateLibrary {
-	template<typename T>
+	template<typename CharacterType>
 	class BasicString final {
-		T *Pointer = nullptr;
+		using Iterator = CharacterType *;
+		using ConstantIterator = const CharacterType *;
+		CharacterType *StringPointer = nullptr;
 		decltype(0_size) Length = 0;
-		static auto Compare(const BasicString &ObjectA, const BasicString &ObjectB, bool LessThan) {
-			auto ActualCompare = [&](auto &&Operation) {
-				auto GetMinimum = [](auto x, auto y) {
-					return x > y ? y : x;
-				};
-				auto i = 0_size;
-				while (i < GetMinimum(ObjectA.Length, ObjectB.Length) && ObjectA[i] == ObjectB[i])
-					++i;
-				return Operation(ObjectA[i], ObjectB[i]);
+		template<typename UnknownLambdaType>
+		static auto FindTheFirstDifferentPairOfCharactersThenCompare(const BasicString &BasicStringA, const BasicString &BasicStringB, UnknownLambdaType &&Action) {
+			auto GetMinimum = [](auto x, auto y) {
+				return x > y ? y : x;
 			};
-			if (LessThan)
-				return ActualCompare([](auto x, auto y) {
-				return x < y;
-			});
-			else
-				return ActualCompare([](auto x, auto y) {
-				return x > y;
-			});
+			auto Cursor = 0_size;
+			while (Cursor < GetMinimum(BasicStringA.Length, BasicStringB.Length) && BasicStringA[Cursor] == BasicStringB[Cursor])
+				++Cursor;
+			return Action(BasicStringA[Cursor], BasicStringB[Cursor]);
 		}
 	public:
-		using BasicStringIterator = T *;
-		using ConstantBasicStringIterator = const T *;
 		static constexpr auto NPOS = static_cast<std::size_t>(-1);
 		BasicString() = default;
-		BasicString(std::size_t Count, T Value) {
-			Pointer = new T[Count + 1];
-			for (auto i = 0_size; i < Count; ++i)
-				Pointer[i] = Value;
-			Pointer[Count] = 0;
+		BasicString(std::size_t Count, CharacterType Character) {
+			StringPointer = new CharacterType[Count + 1];
+			for (auto Cursor = 0_size; Cursor < Count; ++Cursor)
+				StringPointer[Cursor] = Character;
+			StringPointer[Count] = 0;
 			Length = Count;
 		}
-		BasicString(const T *Value, std::size_t Length) {
+		BasicString(const CharacterType *SomeStringPointer, std::size_t Length) {
 			this->Length = Length;
-			Pointer = new T[Length + 1];
-			std::memcpy(Pointer, Value, Length * sizeof(T));
-			Pointer[Length] = 0;
+			StringPointer = new CharacterType[Length + 1];
+			std::memcpy(StringPointer, SomeStringPointer, Length * sizeof(CharacterType));
+			StringPointer[Length] = 0;
 		}
-		BasicString(const T *Value) :BasicString{ Value, [&]() {
-			auto i = 0_size;
-			while (Value[i] != 0)
-				++i;
-			return i;
+		BasicString(const CharacterType *SomeStringPointer) :BasicString{ SomeStringPointer, [&]() {
+			auto Cursor = 0_size;
+			while (SomeStringPointer[Cursor] != 0)
+				++Cursor;
+			return Cursor;
 		}() } {}
-		BasicString(const BasicString &Object) {
-			*this = Object;
+		BasicString(const BasicString &OtherBasicString) {
+			*this = OtherBasicString;
 		}
-		BasicString(BasicString &&Object) {
-			*this = static_cast<BasicString &&>(Object);
+		BasicString(BasicString &&OtherBasicString) {
+			*this = static_cast<BasicString &&>(OtherBasicString);
 		}
-		auto &operator=(const BasicString &Object) {
-			if (this != &Object) {
+		auto &operator=(const BasicString &OtherBasicString) {
+			if (this != &OtherBasicString) {
 				this->~BasicString();
-				new(this) BasicString{ Object.Pointer, Object.Length };
+				new(this) BasicString{ OtherBasicString.StringPointer, OtherBasicString.Length };
 			}
 			return *this;
 		}
-		auto &operator=(BasicString &&Object) {
-			if (this != &Object) {
-				auto TemporaryPointer = Pointer;
-				Pointer = Object.Pointer;
-				Length = Object.Length;
-				Object.Pointer = TemporaryPointer;
+		auto &operator=(BasicString &&OtherBasicString) {
+			if (this != &OtherBasicString) {
+				auto TemporaryPointer = StringPointer;
+				StringPointer = OtherBasicString.StringPointer;
+				Length = OtherBasicString.Length;
+				OtherBasicString.StringPointer = TemporaryPointer;
 			}
 			return *this;
 		}
 		~BasicString() {
-			delete[] Pointer;
+			delete[] StringPointer;
 		}
 		auto Clear() {
 			this->~BasicString();
@@ -82,36 +73,36 @@ namespace StandardTemplateLibrary {
 			return Length == 0;
 		}
 		auto begin() {
-			return BasicStringIterator{ Pointer };
+			return Iterator{ StringPointer };
 		}
 		auto begin() const {
-			return ConstantBasicStringIterator{ Pointer };
+			return ConstantIterator{ StringPointer };
 		}
 		auto end() {
-			return BasicStringIterator{ Pointer + Length };
+			return Iterator{ StringPointer + Length };
 		}
 		auto end() const {
-			return ConstantBasicStringIterator{ Pointer + Length };
+			return ConstantIterator{ StringPointer + Length };
 		}
 		auto Size() const {
 			return Length;
 		}
 		auto *Data() {
-			return Pointer;
+			return StringPointer;
 		}
 		const auto *Data() const {
-			return Pointer;
+			return StringPointer;
 		}
 		auto Substring(std::size_t Position, std::size_t Length = NPOS) const {
 			if (Position + Length > this->Length || Length == NPOS)
 				Length = this->Length - Position;
-			return BasicString{ Pointer + Position, Length };
+			return BasicString{ StringPointer + Position, Length };
 		}
-		auto Find(const BasicString &Object, std::size_t Position = 0) const {
+		auto Find(const BasicString &StringToBeFound, std::size_t Position = 0) const {
 			auto GetMaximum = [](auto x, auto y) {
 				return x < y ? y : x;
 			};
-			auto ShiftTable = reinterpret_cast<std::size_t *>(alloca(GetMaximum(Object.Length, 2) * sizeof(std::size_t)));
+			auto ShiftTable = reinterpret_cast<std::size_t *>(alloca(GetMaximum(StringToBeFound.Length, 2) * sizeof(std::size_t)));
 			auto InitializeShiftTable = [&]() {
 				auto Position = 2_size;
 				auto Cursor = 0_size;
@@ -129,8 +120,8 @@ namespace StandardTemplateLibrary {
 				};
 				ShiftTable[0] = NPOS;
 				ShiftTable[1] = 0;
-				while (Position < Object.Length)
-					if (Object[Position - 1] == Object[Cursor])
+				while (Position < StringToBeFound.Length)
+					if (StringToBeFound[Position - 1] == StringToBeFound[Cursor])
 						RecordCursorAndMoveOn();
 					else if (Cursor > 0)
 						RelocateCursor();
@@ -138,9 +129,9 @@ namespace StandardTemplateLibrary {
 						SkipAndMoveOn();
 			};
 			auto OptimizeShiftTable = [&]() {
-				for (auto i = 1_size; i < Object.Length; ++i)
-					if (Object[i] == Object[ShiftTable[i]])
-						ShiftTable[i] = ShiftTable[ShiftTable[i]];
+				for (auto Cursor = 1_size; Cursor < StringToBeFound.Length; ++Cursor)
+					if (StringToBeFound[Cursor] == StringToBeFound[ShiftTable[Cursor]])
+						ShiftTable[Cursor] = ShiftTable[ShiftTable[Cursor]];
 			};
 			auto ActualFind = [&]() {
 				auto Cursor = 0_size;
@@ -158,13 +149,13 @@ namespace StandardTemplateLibrary {
 					if (Cursor == NPOS)
 						ResetCursorAndMoveOn();
 				};
-				while (Cursor < Object.Length && Position < Length)
-					if (Self[Position] == Object[Cursor])
+				while (Cursor < StringToBeFound.Length && Position < Length)
+					if (Self[Position] == StringToBeFound[Cursor])
 						MoveOn();
 					else
 						RelocateCursor();
-				if (Cursor == Object.Length)
-					return Position - Object.Length;
+				if (Cursor == StringToBeFound.Length)
+					return Position - StringToBeFound.Length;
 				else
 					return NPOS;
 			};
@@ -173,61 +164,65 @@ namespace StandardTemplateLibrary {
 			return ActualFind();
 		}
 		auto &operator[](std::size_t Position) {
-			return Pointer[Position];
+			return StringPointer[Position];
 		}
 		const auto &operator[](std::size_t Position) const {
-			return Pointer[Position];
+			return StringPointer[Position];
 		}
-		auto &operator+=(const BasicString &Object) {
-			if (Object.Length > 0) {
-				auto NewPointer = new T[Length + Object.Length + 1];
-				std::memcpy(NewPointer, Pointer, Length * sizeof(T));
-				std::memcpy(NewPointer + Length, Object.Pointer, Object.Length * sizeof(T));
-				Length += Object.Length;
-				NewPointer[Length] = 0;
-				delete[] Pointer;
-				Pointer = NewPointer;
+		auto &operator+=(const BasicString &SomeBasicString) {
+			if (SomeBasicString.Length > 0) {
+				auto NewStringPointer = new CharacterType[Length + SomeBasicString.Length + 1];
+				std::memcpy(NewStringPointer, StringPointer, Length * sizeof(CharacterType));
+				std::memcpy(NewStringPointer + Length, SomeBasicString.StringPointer, SomeBasicString.Length * sizeof(CharacterType));
+				Length += SomeBasicString.Length;
+				NewStringPointer[Length] = 0;
+				delete[] StringPointer;
+				StringPointer = NewStringPointer;
 			}
 			return *this;
 		}
-		friend auto operator+(const BasicString &ObjectA, const BasicString &ObjectB) {
-			return BasicString{ ObjectA } += ObjectB;
+		friend auto operator+(const BasicString &BasicStringA, const BasicString &BasicStringB) {
+			return BasicString{ BasicStringA } += BasicStringB;
 		}
-		friend auto operator+(BasicString &&ObjectA, const BasicString &ObjectB) {
-			return ObjectA += ObjectB;
+		friend auto operator+(BasicString &&BasicStringA, const BasicString &BasicStringB) {
+			return BasicStringA += BasicStringB;
 		}
-		friend auto operator==(const BasicString &ObjectA, const BasicString &ObjectB) {
+		friend auto operator==(const BasicString &BasicStringA, const BasicString &BasicStringB) {
 			auto ElementWiseCompare = [&]() {
-				for (auto i = 0_size; i < ObjectA.Length; ++i)
-					if (ObjectA[i] == ObjectB[i])
+				for (auto Cursor = 0_size; Cursor < BasicStringA.Length; ++Cursor)
+					if (BasicStringA[Cursor] == BasicStringB[Cursor])
 						continue;
 					else
 						return false;
 				return true;
 			};
-			if (ObjectA.Length != ObjectB.Length)
+			if (BasicStringA.Length != BasicStringB.Length)
 				return false;
 			else
 				return ElementWiseCompare();
 		}
-		friend auto operator!=(const BasicString &ObjectA, const BasicString &ObjectB) {
-			return !(ObjectA == ObjectB);
+		friend auto operator!=(const BasicString &BasicStringA, const BasicString &BasicStringB) {
+			return !(BasicStringA == BasicStringB);
 		}
-		friend auto operator<(const BasicString &ObjectA, const BasicString &ObjectB) {
-			return Compare(ObjectA, ObjectB, true);
+		friend auto operator<(const BasicString &BasicStringA, const BasicString &BasicStringB) {
+			return FindTheFirstDifferentPairOfCharactersThenCompare(BasicStringA, BasicStringB, [](auto x, auto y) {
+				return x < y;
+			});
 		}
-		friend auto operator>(const BasicString &ObjectA, const BasicString &ObjectB) {
-			return Compare(ObjectA, ObjectB, false);
+		friend auto operator>(const BasicString &BasicStringA, const BasicString &BasicStringB) {
+			return FindTheFirstDifferentPairOfCharactersThenCompare(BasicStringA, BasicStringB, [](auto x, auto y) {
+				return x > y;
+			});
 		}
-		friend auto operator<=(const BasicString &ObjectA, const BasicString &ObjectB) {
-			return !(ObjectA > ObjectB);
+		friend auto operator<=(const BasicString &BasicStringA, const BasicString &BasicStringB) {
+			return !(BasicStringA > BasicStringB);
 		}
-		friend auto operator>=(const BasicString &ObjectA, const BasicString &ObjectB) {
-			return !(ObjectA < ObjectB);
+		friend auto operator>=(const BasicString &BasicStringA, const BasicString &BasicStringB) {
+			return !(BasicStringA < BasicStringB);
 		}
-		friend auto &operator<<(std::basic_ostream<T, std::char_traits<T>> &Output, const BasicString &Object) {
-			if (Object.Pointer != nullptr)
-				Output << Object.Pointer;
+		friend auto &operator<<(std::basic_ostream<CharacterType, std::char_traits<CharacterType>> &Output, const BasicString &SomeBasicString) {
+			if (SomeBasicString.StringPointer != nullptr)
+				Output << SomeBasicString.StringPointer;
 			return Output;
 		}
 	};
@@ -239,20 +234,20 @@ namespace StandardTemplateLibrary {
 
 	inline namespace Literals {
 		inline namespace StringLiterals {
-			auto operator""s(const char *Value, std::size_t Length) {
-				return String{ Value, Length };
+			auto operator""s(const char *SomeStringPointer, std::size_t Length) {
+				return String{ SomeStringPointer, Length };
 			}
 
-			auto operator""s(const char16_t *Value, std::size_t Length) {
-				return U16String{ Value, Length };
+			auto operator""s(const char16_t *SomeStringPointer, std::size_t Length) {
+				return U16String{ SomeStringPointer, Length };
 			}
 
-			auto operator""s(const char32_t *Value, std::size_t Length) {
-				return U32String{ Value, Length };
+			auto operator""s(const char32_t *SomeStringPointer, std::size_t Length) {
+				return U32String{ SomeStringPointer, Length };
 			}
 
-			auto operator""s(const wchar_t *Value, std::size_t Length) {
-				return WString{ Value, Length };
+			auto operator""s(const wchar_t *SomeStringPointer, std::size_t Length) {
+				return WString{ SomeStringPointer, Length };
 			}
 		}
 	}
