@@ -58,7 +58,7 @@ namespace StandardTemplateLibrary::Extras {
 			if (IsDirectedGraph == false)
 				Self[DestinationVertexPosition][StartingOffVertexPosition] = Distance;
 		}
-		auto GenerateMinimumSpanningTree(std::size_t StartingOffVertexPosition) {
+		auto GenerateMinimumSpanningTree(std::size_t StartingOffVertexPosition) const {
 			struct ShortestAvailablePath final {
 				decltype(0_size) DestinationVertexPosition = 0;
 				decltype(0.) Distance = 0.;
