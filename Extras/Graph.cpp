@@ -46,11 +46,11 @@ namespace StandardTemplateLibrary::Extras {
 		~Graph() {
 			delete[] AdjacencyMatrix;
 		}
-		auto operator[](std::ptrdiff_t Row) {
+		auto *operator[](std::ptrdiff_t Row) {
 			return AdjacencyMatrix + Row * VertexCount;
 		}
-		auto operator[](std::ptrdiff_t Row) const {
-			return const_cast<const double *>(AdjacencyMatrix + Row * VertexCount);
+		const auto *operator[](std::ptrdiff_t Row) const {
+			return AdjacencyMatrix + Row * VertexCount;
 		}
 		auto Connect(std::size_t StartingOffVertexPosition, std::size_t DestinationVertexPosition, double Distance) {
 			auto &Self = *this;
