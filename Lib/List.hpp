@@ -233,7 +233,7 @@ namespace StandardTemplateLibrary {
 			Merge(OtherList);
 		}
 		auto Sort() {
-			auto TemporaryListArray = List<List>{};
+			auto ListOfPulverizedLists = List<List>{};
 			auto Initialize = [&]() {
 				auto WrapTheFirstNodeAsList = [this]() {
 					auto TemporaryList = List{};
@@ -245,21 +245,25 @@ namespace StandardTemplateLibrary {
 					return TemporaryList;
 				};
 				while (!Empty())
-					TemporaryListArray += WrapTheFirstNodeAsList();
+					ListOfPulverizedLists += WrapTheFirstNodeAsList();
 			};
 			auto MergeSort = [&]() {
-				auto EndPosition = TemporaryListArray.Size() % 2 == 0 ? TemporaryListArray.end() : --TemporaryListArray.end();
+				auto Cursor = ListOfPulverizedLists.begin();
+				auto EndPosition = ListOfPulverizedLists.Size() % 2 == 0 ? ListOfPulverizedLists.end() : --ListOfPulverizedLists.end();
 				auto GetNext = [](auto Iterator) {
 					return ++Iterator;
 				};
-				for (auto Cursor = TemporaryListArray.begin(); Cursor != EndPosition; Cursor = TemporaryListArray.Erase(GetNext(Cursor)))
-					Cursor->Merge(*GetNext(Cursor));
+				while (Cursor != EndPosition) {
+					auto MergingPosition = GetNext(Cursor);
+					Cursor->Merge(*MergingPosition);
+					Cursor = ListOfPulverizedLists.Erase(MergingPosition);
+				}
 			};
 			if (Length > 1) {
 				Initialize();
-				while (TemporaryListArray.Size() > 1)
+				while (ListOfPulverizedLists.Size() > 1)
 					MergeSort();
-				*this = static_cast<List &&>(*TemporaryListArray.begin());
+				*this = static_cast<List &&>(*ListOfPulverizedLists.begin());
 			}
 		}
 		auto Reverse() {
