@@ -264,7 +264,7 @@ namespace StandardTemplateLibrary {
 		}
 		auto Reverse() {
 			auto TemporaryList = List{};
-			auto ShiftLastNodeToTemporaryList = [&]() {
+			auto ShiftTheLastNodeToTemporaryList = [&]() {
 				auto LastNode = Head->Previous;
 				LastNode->Previous->Next = Head;
 				Head->Previous = LastNode->Previous;
@@ -273,7 +273,7 @@ namespace StandardTemplateLibrary {
 			};
 			if (Length > 1) {
 				while (!Empty())
-					ShiftLastNodeToTemporaryList();
+					ShiftTheLastNodeToTemporaryList();
 				*this = static_cast<List &&>(TemporaryList);
 			}
 		}
