@@ -180,8 +180,9 @@ namespace StandardTemplateLibrary {
 			return Iterator{ NodeNextToTheErasedNode };
 		}
 		auto Clear() {
-			for (auto Cursor = begin(); Cursor != end(); ++Cursor)
-				Erase(Cursor);
+			auto Cursor = begin();
+			while (Cursor != end())
+				Cursor = Erase(Cursor);
 		}
 		auto begin() {
 			return Iterator{ Head->Next };
