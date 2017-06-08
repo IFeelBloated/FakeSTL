@@ -93,42 +93,53 @@ namespace StandardTemplateLibrary::Extras {
 			return Vector;
 		}
 		auto &operator*=(double Value) {
-			for (auto &x : *ContainerPointer)
+			for (auto &x : *this)
 				x.Value *= Value;
 			return *this;
 		}
 		auto &operator+=(const SparseVector &RightHandSideVector) {
 			auto Result = NullVector(Dimension);
-			auto LeftHandSideCursor = ContainerPointer->begin();
-			auto RightHandSideCursor = RightHandSideVector.ContainerPointer->begin();
-			auto LeftHandSideVectorActivated = [&](auto Cursor) {
-				return LeftHandSideCursor != ContainerPointer->end() && LeftHandSideCursor->Index == Cursor;
+			auto LeftHandSideCursor = begin();
+			auto RightHandSideCursor = RightHandSideVector.begin();
+			auto &ResultContainer = *Result.ContainerPointer;
+			auto LeftHandSideVectorAlreadyTraversed = [&]() {
+				return LeftHandSideCursor == end();
 			};
-			auto RightHandSideVectorActivated = [&](auto Cursor) {
-				return RightHandSideCursor != RightHandSideVector.ContainerPointer->end() && RightHandSideCursor->Index == Cursor;
-			};
-			auto AddUpAndShiftTheSumToResult = [&]() {
-				auto Value = LeftHandSideCursor->Value + RightHandSideCursor->Value;
-				if (Value != 0.)
-					*Result.ContainerPointer += { Value, LeftHandSideCursor->Index };
-				++LeftHandSideCursor;
-				++RightHandSideCursor;
+			auto RightHandSideVectorAlreadyTraversed = [&]() {
+				return RightHandSideCursor == RightHandSideVector.end();
 			};
 			auto ShiftTheLeftHandSideElementToResult = [&] {
-				*Result.ContainerPointer += *LeftHandSideCursor;
+				ResultContainer += *LeftHandSideCursor;
 				++LeftHandSideCursor;
 			};
 			auto ShiftTheRightHandSideElementToResult = [&] {
-				*Result.ContainerPointer += *RightHandSideCursor;
+				ResultContainer += *RightHandSideCursor;
 				++RightHandSideCursor;
 			};
-			for (auto Cursor = 0_size; Cursor < Dimension; ++Cursor)
-				if (LeftHandSideVectorActivated(Cursor) && RightHandSideVectorActivated(Cursor))
-					AddUpAndShiftTheSumToResult();
-				else if (LeftHandSideVectorActivated(Cursor))
+			auto ElementWiseEvaluate = [&]() {
+				auto AddUpAndAppendTheSumToResult = [&]() {
+					auto Value = LeftHandSideCursor->Value + RightHandSideCursor->Value;
+					if (Value != 0.)
+						ResultContainer += { Value, LeftHandSideCursor->Index };
+					++LeftHandSideCursor;
+					++RightHandSideCursor;
+				};
+				while (LeftHandSideVectorAlreadyTraversed() == false && RightHandSideVectorAlreadyTraversed() == false)
+					if (LeftHandSideCursor->Index == RightHandSideCursor->Index)
+						AddUpAndAppendTheSumToResult();
+					else if (LeftHandSideCursor->Index < RightHandSideCursor->Index)
+						ShiftTheLeftHandSideElementToResult();
+					else
+						ShiftTheRightHandSideElementToResult();
+			};
+			auto ShiftWhatsLeftToResult = [&]() {
+				while (LeftHandSideVectorAlreadyTraversed() == false)
 					ShiftTheLeftHandSideElementToResult();
-				else if (RightHandSideVectorActivated(Cursor))
+				while (RightHandSideVectorAlreadyTraversed() == false)
 					ShiftTheRightHandSideElementToResult();
+			};
+			ElementWiseEvaluate();
+			ShiftWhatsLeftToResult();
 			*this = static_cast<SparseVector &&>(Result);
 			return *this;
 		}
@@ -145,7 +156,7 @@ namespace StandardTemplateLibrary::Extras {
 			return SparseVector{ SomeVector } *= Value;
 		}
 		friend auto &operator<<(std::ostream &Output, const SparseVector &SomeVector) {
-			auto Cursor = SomeVector.ContainerPointer->begin();
+			auto Cursor = SomeVector.begin();
 			auto PrintRealNumberInFormat = [&](auto Value) {
 				Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << Value << " ";
 			};
