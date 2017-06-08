@@ -256,6 +256,8 @@ namespace StandardTemplateLibrary::Extras {
 		auto &operator*=(const SparseMatrix &RightHandSideMatrix) {
 			auto RightHandSideMatrixRowTable = reinterpret_cast<SparseVector **>(alloca(RightHandSideMatrix.Row * sizeof(void *)));
 			auto Result = ZeroMatrix(Row, RightHandSideMatrix.Column);
+			auto &ResultContainer = *Result.ContainerPointer;
+			auto &LeftHandSideMatrixContainer = *ContainerPointer;
 			auto InitializeRowTable = [&]() {
 				auto Cursor = RightHandSideMatrix.ContainerPointer->begin();
 				auto RecordAndMoveOn = [&](auto Position) {
@@ -282,10 +284,10 @@ namespace StandardTemplateLibrary::Extras {
 				return Result;
 			};
 			InitializeRowTable();
-			for (auto &x : *ContainerPointer) {
+			for (auto &x : LeftHandSideMatrixContainer) {
 				auto CurrentRow = RowWiseMultiplication(x.Vector);
-				if (!CurrentRow.Empty())
-					*Result.ContainerPointer += { static_cast<SparseVector &&>(CurrentRow), x.Index };
+				if (CurrentRow.Empty() == false)
+					ResultContainer += { static_cast<SparseVector &&>(CurrentRow), x.Index };
 			}
 			*this = static_cast<SparseMatrix &&>(Result);
 			return *this;
