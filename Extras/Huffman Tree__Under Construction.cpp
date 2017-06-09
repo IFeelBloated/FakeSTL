@@ -2,6 +2,7 @@
 #include "Helpers.hpp"
 #include "Utility.hpp"
 #include "List.hpp"
+#include "TypeTraits.hpp"
 
 namespace StandardTemplateLibrary::Extras {
 	template<typename GenericType>
@@ -24,9 +25,6 @@ namespace StandardTemplateLibrary::Extras {
 				*this = static_cast<HuffmanTreeNode &&>(OtherHuffmanTreeNode);
 			}
 			HuffmanTreeNode(const HuffmanTreeNode &OtherHuffmanTreeNode) {
-				ElementPointer = new GenericType{};
-				LeftChild = new HuffmanTreeNode{};
-				RightChild = new HuffmanTreeNode{};
 				*this = OtherHuffmanTreeNode;
 			}
 			auto &operator=(HuffmanTreeNode &&OtherHuffmanTreeNode) {
@@ -40,14 +38,19 @@ namespace StandardTemplateLibrary::Extras {
 			}
 			auto operator=(const HuffmanTreeNode &OtherHuffmanTreeNode)->decltype(*this) {
 				auto CopyFromThePointerIfPossible = [](auto SourcePointer, auto &DestinationPointer) {
-					auto RestoreTheDestinationPointer = [&]() {
+					auto InitializeTheDestinationPointer = [&]() {
+						DestinationPointer = new RemoveReference<decltype(*DestinationPointer)>::Type{};
+					};
+					auto ResetTheDestinationPointer = [&]() {
 						delete DestinationPointer;
 						DestinationPointer = nullptr;
 					};
+					if (DestinationPointer == nullptr)
+						InitializeTheDestinationPointer();
 					if (SourcePointer != nullptr)
 						*DestinationPointer = *SourcePointer;
 					else
-						RestoreTheDestinationPointer();
+						ResetTheDestinationPointer();
 				};
 				if (this != &OtherHuffmanTreeNode) {
 					CopyFromThePointerIfPossible(OtherHuffmanTreeNode.ElementPointer, ElementPointer);
