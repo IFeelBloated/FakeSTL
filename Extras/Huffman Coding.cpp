@@ -38,19 +38,19 @@ namespace StandardTemplateLibrary::Extras {
 			}
 			auto operator=(const HuffmanTreeNode &OtherHuffmanTreeNode)->decltype(*this) {
 				auto CopyFromThePointerIfPossible = [](auto SourcePointer, auto &DestinationPointer) {
-					auto InitializeTheDestinationPointer = [&]() {
+					auto InitializeDestinationPointer = [&]() {
 						DestinationPointer = new RemoveReference<decltype(*DestinationPointer)>::Type{};
 					};
-					auto ResetTheDestinationPointer = [&]() {
+					auto ResetDestinationPointer = [&]() {
 						delete DestinationPointer;
 						DestinationPointer = nullptr;
 					};
 					if (DestinationPointer == nullptr)
-						InitializeTheDestinationPointer();
+						InitializeDestinationPointer();
 					if (SourcePointer != nullptr)
 						*DestinationPointer = *SourcePointer;
 					else
-						ResetTheDestinationPointer();
+						ResetDestinationPointer();
 				};
 				if (this != &OtherHuffmanTreeNode) {
 					CopyFromThePointerIfPossible(OtherHuffmanTreeNode.ElementPointer, ElementPointer);
@@ -65,11 +65,80 @@ namespace StandardTemplateLibrary::Extras {
 				delete LeftChild;
 				delete RightChild;
 			}
+			auto IsLeaf() {
+				return ElementPointer != nullptr;
+			}
 			auto operator<(const HuffmanTreeNode &OtherHuffmanTreeNode) const {
 				return Weight < OtherHuffmanTreeNode.Weight;
 			}
 		};
+		struct CodingUnit final {
+			GenericType Element = {};
+			decltype(0_uint64) Code = 0;
+			static constexpr auto AnchorBit = 1_uint64;
+			CodingUnit() = default;
+			CodingUnit(GenericType &&SomeElement, std::uint64_t SomeCode) {
+				Element = static_cast<GenericType &&>(SomeElement);
+				Code = SomeCode;
+			}
+			CodingUnit(const GenericType &SomeElement, std::uint64_t SomeCode) {
+				Element = SomeElement;
+				Code = SomeCode;
+			}
+			CodingUnit(CodingUnit &&OtherCodingUnit) {
+				*this = static_cast<CodingUnit &&>(OtherCodingUnit);
+			}
+			CodingUnit(const CodingUnit &) = default;
+			auto &operator=(CodingUnit &&OtherCodingUnit) {
+				if (this != &OtherCodingUnit) {
+					Element = static_cast<GenericType &&>(OtherCodingUnit.Element);
+					Code = OtherCodingUnit.Code;
+				}
+				return *this;
+			}
+			auto operator=(const CodingUnit &)->decltype(*this) = default;
+			~CodingUnit() = default;
+			friend auto &operator<<(std::ostream &Output, const CodingUnit &SomeCodingUnit) {
+				constexpr auto AnchorBit = CodingUnit::AnchorBit;
+				auto PrintBinaryCode = [&](auto Code) {
+					auto BitContainer = List<decltype(Code)>{};
+					if (Code == AnchorBit)
+						Output << 0;
+					while (Code != AnchorBit) {
+						BitContainer += Code & 0x1;
+						Code >>= 1;
+					}
+					BitContainer.Reverse();
+					for (auto x : BitContainer)
+						Output << x;
+				};
+				Output << SomeCodingUnit.Element << ": ";
+				PrintBinaryCode(SomeCodingUnit.Code);
+				return Output;
+			}
+		};
+		using CodingUnitContainer = List<CodingUnit>;
 		HuffmanTreeNode *Root = nullptr;
+		auto TagEachNodeRecursively(HuffmanTreeNode *NodeCursor, std::uint64_t ConstructedCode, CodingUnitContainer &CodingResult)->void {
+			auto CompleteTagging = [&]() {
+				CodingResult += { static_cast<GenericType &&>(*NodeCursor->ElementPointer), ConstructedCode };
+			};
+			auto KeepOnTagging = [&]() {
+				auto TagLeftChild = [](auto PartialCode) {
+					return PartialCode << 1;
+				};
+				auto TagRightChild = [](auto PartialCode) {
+					PartialCode <<= 1;
+					return PartialCode + 1;
+				};
+				TagEachNodeRecursively(NodeCursor->LeftChild, TagLeftChild(ConstructedCode), CodingResult);
+				TagEachNodeRecursively(NodeCursor->RightChild, TagRightChild(ConstructedCode), CodingResult);
+			};
+			if (NodeCursor->IsLeaf())
+				CompleteTagging();
+			else
+				KeepOnTagging();
+		}
 	public:
 		HuffmanTree() {
 			Root = new HuffmanTreeNode{};
@@ -121,13 +190,24 @@ namespace StandardTemplateLibrary::Extras {
 		~HuffmanTree() {
 			delete Root;
 		}
+		auto Encode() {
+			auto CodingResult = List<CodingUnit>{};
+			TagEachNodeRecursively(Root, CodingUnit::AnchorBit, CodingResult);
+			return CodingResult;
+		}
 	};
 }
 
 auto main()->int {
+	using SetOfWeightedLetters = StandardTemplateLibrary::Extras::HuffmanTree<decltype('a')>;
+	auto TestSet = SetOfWeightedLetters{ { 'c', 10 }, { 'a', 3 }, { 'e', 8 }, { 'd', 2 }, { 'f', 20 }, { 'k', 11 } };
+	auto CodingResult = TestSet.Encode();
 	auto Pause = []() {
 		std::cout << "Press ENTER to continue . . . ";
 		std::cin.get();
 	};
+	std::cout << "Huffman Coding Result:" << std::endl;
+	for (auto &x : CodingResult)
+		std::cout << x << std::endl;
 	Pause();
 }

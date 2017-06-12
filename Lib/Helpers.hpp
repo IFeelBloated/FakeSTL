@@ -18,4 +18,7 @@ namespace StandardTemplateLibrary {
 	constexpr auto operator""_size(unsigned long long Value) {
 		return static_cast<std::size_t>(Value);
 	}
+	constexpr auto operator""_uint64(unsigned long long Value) {
+		return static_cast<std::uint64_t>(Value);
+	}
 }
