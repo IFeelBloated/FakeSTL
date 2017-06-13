@@ -39,7 +39,7 @@ namespace StandardTemplateLibrary::Extras {
 			auto operator=(const HuffmanTreeNode &OtherHuffmanTreeNode)->decltype(*this) {
 				auto CopyFromThePointerIfPossible = [](auto SourcePointer, auto &DestinationPointer) {
 					auto InitializeDestinationPointer = [&]() {
-						DestinationPointer = new RemoveReference<decltype(*DestinationPointer)>::Type{};
+						DestinationPointer = new RemoveReference_t<decltype(*DestinationPointer)>{};
 					};
 					auto ResetDestinationPointer = [&]() {
 						delete DestinationPointer;

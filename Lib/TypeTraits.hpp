@@ -34,4 +34,7 @@ namespace StandardTemplateLibrary {
 		auto &operator=(const RemoveReference &) = delete;
 		~RemoveReference() = delete;
 	};
+
+	template<typename GenericType>
+	using RemoveReference_t = typename RemoveReference<GenericType>::Type;
 }
