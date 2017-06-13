@@ -7,6 +7,7 @@
 #include <cwchar>
 #include <cstdint>
 #include <cstring>
+#include <cmath>
 
 #if defined(_MSC_VER)
 #include <malloc.h>
