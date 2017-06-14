@@ -92,8 +92,11 @@ namespace StandardTemplateLibrary::Extras {
 			return Vector;
 		}
 		auto &operator*=(double Value) {
-			for (auto &x : *this)
-				x.Value *= Value;
+			if (Value != 0.)
+				for (auto &x : *this)
+					x.Value *= Value;
+			else
+				ContainerPointer->Clear();
 			return *this;
 		}
 		auto &operator+=(const SparseVector &RightHandSideVector) {
