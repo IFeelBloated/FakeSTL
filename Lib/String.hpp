@@ -86,11 +86,11 @@ namespace StandardTemplateLibrary {
 		auto Size() const {
 			return Length;
 		}
-		auto *Data() {
+		auto Data() {
 			return StringPointer;
 		}
-		const auto *Data() const {
-			return StringPointer;
+		auto Data() const {
+			return CastToConstantPointer(StringPointer);
 		}
 		auto Substring(std::size_t Position, std::size_t Length = NPOS) const {
 			if (Position + Length > this->Length || Length == NPOS)

@@ -52,7 +52,7 @@ namespace StandardTemplateLibrary {
 			auto &operator*() const {
 				return *this->NodePointer->ElementPointer;
 			}
-			auto *operator->() const {
+			auto operator->() const {
 				return this->NodePointer->ElementPointer;
 			}
 			auto &operator++() {
@@ -77,8 +77,8 @@ namespace StandardTemplateLibrary {
 			const auto &operator*() const {
 				return *this->NodePointer->ElementPointer;
 			}
-			const auto *operator->() const {
-				return this->NodePointer->ElementPointer;
+			auto operator->() const {
+				return CastToConstantPointer(this->NodePointer->ElementPointer);
 			}
 			auto &operator++() {
 				this->NodePointer = this->NodePointer->Next;
