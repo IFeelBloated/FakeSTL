@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Helpers.hpp"
+#include "Utility.hpp"
 
 namespace StandardTemplateLibrary::Extras {
 	class Graph final {
@@ -18,11 +19,9 @@ namespace StandardTemplateLibrary::Extras {
 		}
 		auto &operator=(Graph &&OtherGraph) {
 			if (this != &OtherGraph) {
-				auto TemporaryPointer = AdjacencyMatrix;
-				AdjacencyMatrix = OtherGraph.AdjacencyMatrix;
+				Swap(AdjacencyMatrix, OtherGraph.AdjacencyMatrix);
 				VertexCount = OtherGraph.VertexCount;
 				IsDirectedGraph = OtherGraph.IsDirectedGraph;
-				OtherGraph.AdjacencyMatrix = TemporaryPointer;
 			}
 			return *this;
 		}
@@ -69,8 +68,8 @@ namespace StandardTemplateLibrary::Extras {
 				}
 				ShortestAvailablePath(ShortestAvailablePath &&) = default;
 				ShortestAvailablePath(const ShortestAvailablePath &) = default;
-				auto operator=(ShortestAvailablePath &&)->ShortestAvailablePath & = default;
-				auto operator=(const ShortestAvailablePath &)->ShortestAvailablePath & = default;
+				auto operator=(ShortestAvailablePath &&)->decltype(*this) = default;
+				auto operator=(const ShortestAvailablePath &)->decltype(*this) = default;
 				~ShortestAvailablePath() = default;
 			};
 			auto &Self = *this;

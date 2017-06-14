@@ -1,5 +1,6 @@
 #pragma once
 #include "Helpers.hpp"
+#include "Utility.hpp"
 
 namespace StandardTemplateLibrary {
 	template<typename CharacterType>
@@ -55,10 +56,8 @@ namespace StandardTemplateLibrary {
 		}
 		auto &operator=(BasicString &&OtherBasicString) {
 			if (this != &OtherBasicString) {
-				auto TemporaryPointer = StringPointer;
-				StringPointer = OtherBasicString.StringPointer;
+				Swap(StringPointer, OtherBasicString.StringPointer);
 				Length = OtherBasicString.Length;
-				OtherBasicString.StringPointer = TemporaryPointer;
 			}
 			return *this;
 		}

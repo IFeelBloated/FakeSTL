@@ -1,6 +1,7 @@
 #pragma once
 #include "Helpers.hpp"
 #include "Deque.hpp"
+#include "Utility.hpp"
 
 namespace StandardTemplateLibrary {
 	template<typename GenericType, typename Container = Deque<GenericType>>
@@ -20,11 +21,8 @@ namespace StandardTemplateLibrary {
 			*this = OtherStack;
 		}
 		auto &operator=(Stack &&OtherStack) {
-			if (this != &OtherStack) {
-				auto TemporaryPointer = ContainerPointer;
-				ContainerPointer = OtherStack.ContainerPointer;
-				OtherStack.ContainerPointer = TemporaryPointer;
-			}
+			if (this != &OtherStack)
+				Swap(ContainerPointer, OtherStack.ContainerPointer);
 			return *this;
 		}
 		auto &operator=(const Stack &OtherStack) {

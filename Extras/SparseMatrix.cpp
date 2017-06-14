@@ -1,6 +1,7 @@
 #include <iomanip>
 #include "Helpers.hpp"
 #include "List.hpp"
+#include "Utility.hpp"
 
 namespace StandardTemplateLibrary::Extras {
 	class SparseVector final {
@@ -14,8 +15,8 @@ namespace StandardTemplateLibrary::Extras {
 			}
 			VectorNode(VectorNode &&) = default;
 			VectorNode(const VectorNode &) = default;
-			auto operator=(VectorNode &&)->VectorNode & = default;
-			auto operator=(const VectorNode &)->VectorNode & = default;
+			auto operator=(VectorNode &&)->decltype(*this) = default;
+			auto operator=(const VectorNode &)->decltype(*this) = default;
 			~VectorNode() = default;
 		};
 		using Container = List<VectorNode>;
@@ -44,9 +45,7 @@ namespace StandardTemplateLibrary::Extras {
 		}
 		auto &operator=(SparseVector &&OtherSparseVector) {
 			if (this != &OtherSparseVector) {
-				auto TemporaryPointer = ContainerPointer;
-				ContainerPointer = OtherSparseVector.ContainerPointer;
-				OtherSparseVector.ContainerPointer = TemporaryPointer;
+				Swap(ContainerPointer, OtherSparseVector.ContainerPointer);
 				Dimension = OtherSparseVector.Dimension;
 			}
 			return *this;
@@ -184,14 +183,18 @@ namespace StandardTemplateLibrary::Extras {
 				this->Vector = Vector;
 				this->Index = Index;
 			}
-			MatrixNode(MatrixNode &&OtherMatrixNode) :MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index } {}
-			MatrixNode(const MatrixNode &) = default;
 			auto &operator=(MatrixNode &&OtherMatrixNode) {
-				if (this != &OtherMatrixNode)
-					new(this) MatrixNode{ static_cast<SparseVector &&>(OtherMatrixNode.Vector), OtherMatrixNode.Index };
+				if (this != &OtherMatrixNode) {
+					Vector = static_cast<SparseVector &&>(OtherMatrixNode.Vector);
+					Index = OtherMatrixNode.Index;
+				}
 				return *this;
 			}
-			auto operator=(const MatrixNode &)->MatrixNode & = default;
+			auto operator=(const MatrixNode &)->decltype(*this) = default;
+			MatrixNode(MatrixNode &&OtherMatrixNode) {
+				*this = static_cast<MatrixNode &&>(OtherMatrixNode);
+			}
+			MatrixNode(const MatrixNode &) = default;
 			~MatrixNode() = default;
 		};
 		using Container = List<MatrixNode>;
@@ -222,9 +225,7 @@ namespace StandardTemplateLibrary::Extras {
 		}
 		auto &operator=(SparseMatrix &&OtherSparseMatrix) {
 			if (this != &OtherSparseMatrix) {
-				auto TemporaryPointer = ContainerPointer;
-				ContainerPointer = OtherSparseMatrix.ContainerPointer;
-				OtherSparseMatrix.ContainerPointer = TemporaryPointer;
+				Swap(ContainerPointer, OtherSparseMatrix.ContainerPointer);
 				Row = OtherSparseMatrix.Row;
 				Column = OtherSparseMatrix.Column;
 			}

@@ -16,8 +16,8 @@ private:
 		}
 		DataSet(const DataSet &) = default;
 		DataSet(DataSet &&) = default;
-		auto operator=(const DataSet &)->DataSet & = default;
-		auto operator=(DataSet &&)->DataSet & = default;
+		auto operator=(const DataSet &)->decltype(*this) = default;
+		auto operator=(DataSet &&)->decltype(*this) = default;
 		~DataSet() = default;
 	};
 public:
@@ -45,8 +45,8 @@ public:
 	}
 	ExpressionNode(const ExpressionNode &) = default;
 	ExpressionNode(ExpressionNode &&) = default;
-	auto operator=(const ExpressionNode &)->ExpressionNode & = default;
-	auto operator=(ExpressionNode &&)->ExpressionNode & = default;
+	auto operator=(const ExpressionNode &)->decltype(*this) = default;
+	auto operator=(ExpressionNode &&)->decltype(*this) = default;
 	~ExpressionNode() = default;
 	auto operator==(char Operator) const {
 		return IsOperator && DataUnion.Operator == Operator;

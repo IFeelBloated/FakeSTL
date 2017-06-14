@@ -1,5 +1,6 @@
 #pragma once
 #include "Helpers.hpp"
+#include "Utility.hpp"
 
 namespace StandardTemplateLibrary {
 	template<typename GenericType>
@@ -31,8 +32,8 @@ namespace StandardTemplateLibrary {
 			}
 			IteratorBase(const IteratorBase &) = default;
 			IteratorBase(IteratorBase &&) = default;
-			auto operator=(const IteratorBase &)->IteratorBase & = default;
-			auto operator=(IteratorBase &&)->IteratorBase & = default;
+			auto operator=(const IteratorBase &)->decltype(*this) = default;
+			auto operator=(IteratorBase &&)->decltype(*this) = default;
 			~IteratorBase() = default;
 			friend auto operator==(IteratorBase IteratorA, IteratorBase IteratorB) {
 				return IteratorA.NodePointer == IteratorB.NodePointer;
@@ -45,8 +46,8 @@ namespace StandardTemplateLibrary {
 			using IteratorBase::IteratorBase;
 			Iterator(const Iterator &) = default;
 			Iterator(Iterator &&) = default;
-			auto operator=(const Iterator &)->Iterator & = default;
-			auto operator=(Iterator &&)->Iterator & = default;
+			auto operator=(const Iterator &)->decltype(*this) = default;
+			auto operator=(Iterator &&)->decltype(*this) = default;
 			~Iterator() = default;
 			auto &operator*() const {
 				return *this->NodePointer->ElementPointer;
@@ -70,8 +71,8 @@ namespace StandardTemplateLibrary {
 			}
 			ConstantIterator(const ConstantIterator &) = default;
 			ConstantIterator(ConstantIterator &&) = default;
-			auto operator=(const ConstantIterator &)->ConstantIterator & = default;
-			auto operator=(ConstantIterator &&)->ConstantIterator & = default;
+			auto operator=(const ConstantIterator &)->decltype(*this) = default;
+			auto operator=(ConstantIterator &&)->decltype(*this) = default;
 			~ConstantIterator() = default;
 			const auto &operator*() const {
 				return *this->NodePointer->ElementPointer;
@@ -116,9 +117,7 @@ namespace StandardTemplateLibrary {
 		}
 		auto &operator=(List &&OtherList) {
 			if (this != &OtherList) {
-				auto TemporaryPointer = Head;
-				Head = OtherList.Head;
-				OtherList.Head = TemporaryPointer;
+				Swap(Head, OtherList.Head);
 				Length = OtherList.Length;
 			}
 			return *this;

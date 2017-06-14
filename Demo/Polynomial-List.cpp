@@ -10,8 +10,8 @@ struct PolynomialTerm final {
 	}
 	PolynomialTerm(PolynomialTerm &&) = default;
 	PolynomialTerm(const PolynomialTerm &) = default;
-	auto operator=(PolynomialTerm &&)->PolynomialTerm & = default;
-	auto operator=(const PolynomialTerm &)->PolynomialTerm & = default;
+	auto operator=(PolynomialTerm &&)->decltype(*this) = default;
+	auto operator=(const PolynomialTerm &)->decltype(*this) = default;
 	~PolynomialTerm() = default;
 	auto operator*(const PolynomialTerm &RightHandSideTerm) const {
 		return PolynomialTerm{ Coefficient * RightHandSideTerm.Coefficient, Degree + RightHandSideTerm.Degree };
@@ -26,8 +26,8 @@ struct PolynomialTerm final {
 
 auto main()->int {
 	using Polynomial = StandardTemplateLibrary::List<PolynomialTerm>;
-	auto PolynomialA = Polynomial{ { 1., 0. }, { 1., 1. } };
-	auto PolynomialB = Polynomial{ { 1., 0. }, { 2., 1. }, { 6., 2. } };
+	auto PolynomialA = Polynomial{ { 1., 0. },{ 1., 1. } };
+	auto PolynomialB = Polynomial{ { 1., 0. },{ 2., 1. },{ 6., 2. } };
 	auto SimplifyPolynomial = [](auto &Expression) {
 		auto CombineLikeTerms = [&]() {
 			auto Combine = [&]() {
