@@ -1,14 +1,15 @@
 #pragma once
 #include "Helpers.hpp"
 #include "Utility.hpp"
+#include "MacroHacks.hpp"
 
 namespace StandardTemplateLibrary {
 	template<typename CharacterType>
 	class BasicString final {
 		using Iterator = CharacterType *;
 		using ConstantIterator = const CharacterType *;
-		CharacterType *StringPointer = nullptr;
-		decltype(0_size) Length = 0;
+		self(StringPointer, static_cast<CharacterType *>(nullptr));
+		self(Length, 0_size);
 		template<typename UnknownLambdaType>
 		static auto FindTheFirstDifferentPairOfCharactersThenCompare(const BasicString &BasicStringA, const BasicString &BasicStringB, UnknownLambdaType &&Action) {
 			auto GetMinimum = [](auto x, auto y) {
@@ -20,7 +21,7 @@ namespace StandardTemplateLibrary {
 			return Action(BasicStringA[Cursor], BasicStringB[Cursor]);
 		}
 	public:
-		static constexpr auto NPOS = static_cast<std::size_t>(-1);
+		static constexpr auto NPOS = static_cast<decltype(Length)>(-1);
 		BasicString() = default;
 		BasicString(std::size_t Count, CharacterType Character) {
 			StringPointer = new CharacterType[Count + 1];
@@ -31,7 +32,7 @@ namespace StandardTemplateLibrary {
 		}
 		BasicString(const CharacterType *SomeStringPointer, std::size_t Length) {
 			this->Length = Length;
-			StringPointer = new CharacterType[Length + 1];
+			this->StringPointer = new CharacterType[Length + 1];
 			std::memcpy(StringPointer, SomeStringPointer, Length * sizeof(CharacterType));
 			StringPointer[Length] = 0;
 		}

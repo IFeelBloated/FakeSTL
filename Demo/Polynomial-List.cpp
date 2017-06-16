@@ -1,9 +1,10 @@
 #include <iostream>
 #include "List.hpp"
+#include "MacroHacks.hpp"
 
 struct PolynomialTerm final {
-	decltype(0.) Coefficient = 0.;
-	decltype(0.) Degree = 0.;
+	self(Coefficient, 0.);
+	self(Degree, 0.);
 	PolynomialTerm(double Coefficient = 0., double Degree = 0.) {
 		this->Coefficient = Coefficient;
 		this->Degree = Degree;

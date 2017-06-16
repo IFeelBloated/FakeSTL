@@ -1,11 +1,12 @@
 #include <iostream>
 #include "Stack.hpp"
 #include "List.hpp"
+#include "MacroHacks.hpp"
 
 struct ExpressionNode final {
-	decltype(0.) Operand = 0.;
-	decltype('#') Operator = '#';
-	decltype(0ull) Precedence = 0;
+	self(Operand, 0.);
+	self(Operator, '#');
+	self(Precedence, 0ull);
 	ExpressionNode() = default;
 	ExpressionNode(double Operand) {
 		this->Operand = Operand;

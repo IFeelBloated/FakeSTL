@@ -1,14 +1,15 @@
 #pragma once
 #include "Helpers.hpp"
 #include "Utility.hpp"
+#include "MacroHacks.hpp"
 
 namespace StandardTemplateLibrary {
 	template<typename GenericType>
 	class List final {
 		struct ListNode final {
-			GenericType *ElementPointer = nullptr;
-			ListNode *Next = nullptr;
-			ListNode *Previous = nullptr;
+			self(ElementPointer, static_cast<GenericType *>(nullptr));
+			self(Next, static_cast<ListNode *>(nullptr));
+			self(Previous, static_cast<ListNode *>(nullptr));
 			ListNode() = default;
 			ListNode(const GenericType &SomeElement) {
 				ElementPointer = new GenericType{ SomeElement };
@@ -25,7 +26,7 @@ namespace StandardTemplateLibrary {
 			}
 		};
 		struct IteratorBase {
-			ListNode *NodePointer = nullptr;
+			self(NodePointer, static_cast<ListNode *>(nullptr));
 			IteratorBase() = default;
 			IteratorBase(ListNode *SomeListNode) {
 				NodePointer = SomeListNode;
@@ -89,8 +90,8 @@ namespace StandardTemplateLibrary {
 				return *this;
 			}
 		};
-		ListNode *Head = nullptr;
-		decltype(0_size) Length = 0;
+		self(Head, static_cast<ListNode *>(nullptr));
+		self(Length, 0_size);
 		auto InsertConstructedNode(ConstantIterator Position, ListNode *ConstructedNode) {
 			ConstructedNode->Next = Position.NodePointer;
 			ConstructedNode->Previous = Position.NodePointer->Previous;

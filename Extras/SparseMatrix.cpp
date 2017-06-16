@@ -2,12 +2,13 @@
 #include "Helpers.hpp"
 #include "List.hpp"
 #include "Utility.hpp"
+#include "MacroHacks.hpp"
 
 namespace StandardTemplateLibrary::Extras {
 	class SparseVector final {
 		struct VectorNode final {
-			decltype(0.) Value = 0.;
-			decltype(0_size) Index = 0;
+			self(Value, 0.);
+			self(Index, 0_size);
 			VectorNode() = default;
 			VectorNode(double Value, std::size_t Index) {
 				this->Value = Value;
@@ -20,8 +21,8 @@ namespace StandardTemplateLibrary::Extras {
 			~VectorNode() = default;
 		};
 		using Container = List<VectorNode>;
-		Container *ContainerPointer = nullptr;
-		decltype(0_size) Dimension = 0;
+		self(ContainerPointer, static_cast<Container *>(nullptr));
+		self(Dimension, 0_size);
 	public:
 		SparseVector() {
 			ContainerPointer = new Container{};
@@ -175,8 +176,8 @@ namespace StandardTemplateLibrary::Extras {
 
 	class SparseMatrix final {
 		struct MatrixNode final {
-			SparseVector Vector = {};
-			decltype(0_size) Index = 0;
+			self(Vector, SparseVector{});
+			self(Index, 0_size);
 			MatrixNode() = default;
 			MatrixNode(SparseVector &&Vector, std::size_t Index) {
 				this->Vector = Move(Vector);
@@ -201,9 +202,9 @@ namespace StandardTemplateLibrary::Extras {
 			~MatrixNode() = default;
 		};
 		using Container = List<MatrixNode>;
-		Container *ContainerPointer = nullptr;
-		decltype(0_size) Row = 0;
-		decltype(0_size) Column = 0;
+		self(ContainerPointer, static_cast<Container *>(nullptr));
+		self(Row, 0_size);
+		self(Column, 0_size);
 	public:
 		SparseMatrix() {
 			ContainerPointer = new Container{};

@@ -2,11 +2,12 @@
 #include "Helpers.hpp"
 #include "Deque.hpp"
 #include "Utility.hpp"
+#include "MacroHacks.hpp"
 
 namespace StandardTemplateLibrary {
 	template<typename GenericType, typename Container = Deque<GenericType>>
 	class Stack final {
-		Container *ContainerPointer = nullptr;
+		self(ContainerPointer, static_cast<Container *>(nullptr));
 	public:
 		Stack() {
 			ContainerPointer = new Container{};

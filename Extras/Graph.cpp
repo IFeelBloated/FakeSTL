@@ -1,17 +1,18 @@
 #include <iostream>
 #include "Helpers.hpp"
 #include "Utility.hpp"
+#include "MacroHacks.hpp"
 
 namespace StandardTemplateLibrary::Extras {
 	class Graph final {
-		decltype(0.) *AdjacencyMatrix = nullptr;
-		decltype(0_size) VertexCount = 0;
-		decltype(false) IsDirectedGraph = false;
+		self(AdjacencyMatrix, static_cast<double *>(nullptr));
+		self(VertexCount, 0_size);
+		self(IsDirectedGraph, false);
 		static constexpr auto Infinity = 1e+308 * 1e+308;
 	public:
 		Graph(std::size_t VertexCount, bool IsDirectedGraph = false) {
 			auto AdjacencyMatrixSize = VertexCount * VertexCount;
-			AdjacencyMatrix = new double[AdjacencyMatrixSize];
+			this->AdjacencyMatrix = new double[AdjacencyMatrixSize];
 			this->VertexCount = VertexCount;
 			this->IsDirectedGraph = IsDirectedGraph;
 			for (auto Cursor = 0_size; Cursor < AdjacencyMatrixSize; ++Cursor)
@@ -59,8 +60,8 @@ namespace StandardTemplateLibrary::Extras {
 		}
 		auto GenerateMinimumSpanningTree(std::size_t StartingOffVertexPosition) const {
 			struct ShortestAvailablePath final {
-				decltype(0_size) DestinationVertexPosition = 0;
-				decltype(0.) Distance = 0.;
+				self(DestinationVertexPosition, 0_size);
+				self(Distance, 0.);
 				ShortestAvailablePath() = default;
 				ShortestAvailablePath(std::size_t DestinationVertexPosition, double Distance) {
 					this->DestinationVertexPosition = DestinationVertexPosition;

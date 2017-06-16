@@ -3,15 +3,16 @@
 #include "Utility.hpp"
 #include "List.hpp"
 #include "TypeTraits.hpp"
+#include "MacroHacks.hpp"
 
 namespace StandardTemplateLibrary::Extras {
 	template<typename GenericType>
 	class HuffmanTree final {
 		struct HuffmanTreeNode final {
-			GenericType *ElementPointer = nullptr;
-			HuffmanTreeNode *LeftChild = nullptr;
-			HuffmanTreeNode *RightChild = nullptr;
-			decltype(0.) Weight = 0.;
+			self(ElementPointer, static_cast<GenericType *>(nullptr));
+			self(LeftChild, static_cast<HuffmanTreeNode *>(nullptr));
+			self(RightChild, static_cast<HuffmanTreeNode *>(nullptr));
+			self(Weight, 0.);
 			HuffmanTreeNode() = default;
 			HuffmanTreeNode(const GenericType &SomeElement, double Weight) {
 				this->ElementPointer = new GenericType{ SomeElement };
@@ -73,8 +74,8 @@ namespace StandardTemplateLibrary::Extras {
 			}
 		};
 		struct CodingUnit final {
-			GenericType Element = {};
-			decltype(0ull) Code = 0;
+			self(Element, GenericType{});
+			self(Code, 0ull);
 			CodingUnit() = default;
 			CodingUnit(GenericType &&SomeElement, unsigned long long SomeCode) {
 				Element = Move(SomeElement);
@@ -99,7 +100,7 @@ namespace StandardTemplateLibrary::Extras {
 			~CodingUnit() = default;
 		};
 		using CodingUnitContainer = List<CodingUnit>;
-		HuffmanTreeNode *Root = nullptr;
+		self(Root, static_cast<HuffmanTreeNode *>(nullptr));
 		auto TagEachNodeRecursively(HuffmanTreeNode *NodeCursor, unsigned long long ConstructedCode, CodingUnitContainer &CodingResult)->void {
 			auto CompleteTagging = [&]() {
 				CodingResult += { Move(*NodeCursor->ElementPointer), ConstructedCode };
