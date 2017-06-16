@@ -58,7 +58,7 @@ namespace StandardTemplateLibrary::Extras {
 			return *this;
 		}
 		SparseVector(SparseVector &&OtherSparseVector) {
-			*this = static_cast<SparseVector &&>(OtherSparseVector);
+			*this = Move(OtherSparseVector);
 		}
 		SparseVector(const SparseVector &OtherSparseVector) :SparseVector{} {
 			*this = OtherSparseVector;
@@ -142,7 +142,7 @@ namespace StandardTemplateLibrary::Extras {
 			};
 			ElementWiseEvaluate();
 			ShiftWhatsLeftToResult();
-			*this = static_cast<SparseVector &&>(Result);
+			*this = Move(Result);
 			return *this;
 		}
 		friend auto operator*(double Value, SparseVector &&SomeVector) {
@@ -179,7 +179,7 @@ namespace StandardTemplateLibrary::Extras {
 			decltype(0_size) Index = 0;
 			MatrixNode() = default;
 			MatrixNode(SparseVector &&Vector, std::size_t Index) {
-				this->Vector = static_cast<SparseVector &&>(Vector);
+				this->Vector = Move(Vector);
 				this->Index = Index;
 			}
 			MatrixNode(const SparseVector &Vector, std::size_t Index) {
@@ -188,14 +188,14 @@ namespace StandardTemplateLibrary::Extras {
 			}
 			auto &operator=(MatrixNode &&OtherMatrixNode) {
 				if (this != &OtherMatrixNode) {
-					Vector = static_cast<SparseVector &&>(OtherMatrixNode.Vector);
+					Vector = Move(OtherMatrixNode.Vector);
 					Index = OtherMatrixNode.Index;
 				}
 				return *this;
 			}
 			auto operator=(const MatrixNode &)->decltype(*this) = default;
 			MatrixNode(MatrixNode &&OtherMatrixNode) {
-				*this = static_cast<MatrixNode &&>(OtherMatrixNode);
+				*this = Move(OtherMatrixNode);
 			}
 			MatrixNode(const MatrixNode &) = default;
 			~MatrixNode() = default;
@@ -243,7 +243,7 @@ namespace StandardTemplateLibrary::Extras {
 			return *this;
 		}
 		SparseMatrix(SparseMatrix &&OtherSparseMatrix) {
-			*this = static_cast<SparseMatrix &&>(OtherSparseMatrix);
+			*this = Move(OtherSparseMatrix);
 		}
 		SparseMatrix(const SparseMatrix &OtherSparseMatrix) :SparseMatrix{} {
 			*this = OtherSparseMatrix;
@@ -291,9 +291,9 @@ namespace StandardTemplateLibrary::Extras {
 			for (auto &x : LeftHandSideMatrixContainer) {
 				auto CurrentRow = RowWiseMultiplication(x.Vector);
 				if (CurrentRow.Empty() == false)
-					ResultContainer += { static_cast<SparseVector &&>(CurrentRow), x.Index };
+					ResultContainer += { Move(CurrentRow), x.Index };
 			}
-			*this = static_cast<SparseMatrix &&>(Result);
+			*this = Move(Result);
 			return *this;
 		}
 		friend auto operator*(const SparseMatrix &MatrixA, const SparseMatrix &MatrixB) {

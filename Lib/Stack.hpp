@@ -15,7 +15,7 @@ namespace StandardTemplateLibrary {
 			ContainerPointer = new Container{ Initialization };
 		}
 		Stack(Stack &&OtherStack) {
-			*this = static_cast<Stack &&>(OtherStack);
+			*this = Move(OtherStack);
 		}
 		Stack(const Stack &OtherStack) :Stack{} {
 			*this = OtherStack;
@@ -40,7 +40,7 @@ namespace StandardTemplateLibrary {
 			return *--ContainerPointer->end();
 		}
 		auto &operator+=(GenericType &&SomeElement) {
-			ContainerPointer->PushBack(static_cast<GenericType &&>(SomeElement));
+			ContainerPointer->PushBack(Move(SomeElement));
 			return *this;
 		}
 		auto &operator+=(const GenericType &SomeElement) {
@@ -52,7 +52,7 @@ namespace StandardTemplateLibrary {
 			return *this;
 		}
 		auto Push(GenericType &&SomeElement) {
-			*this += static_cast<GenericType &&>(SomeElement);
+			*this += Move(SomeElement);
 		}
 		auto Push(const GenericType &SomeElement) {
 			*this += SomeElement;

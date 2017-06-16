@@ -1,11 +1,17 @@
 #pragma once
 #include "Helpers.hpp"
+#include "TypeTraits.hpp"
 
 namespace StandardTemplateLibrary {
-	template<typename MovableObject>
-	auto Swap(MovableObject &ObjectA, MovableObject &ObjectB) {
-		auto TemporaryObject = static_cast<MovableObject &&>(ObjectA);
-		ObjectA = static_cast<MovableObject &&>(ObjectB);
-		ObjectB = static_cast<MovableObject &&>(TemporaryObject);
+	template<typename MovableType>
+	constexpr auto &&Move(MovableType &&MovableObject) {
+		return static_cast<RemoveReference_t<MovableType> &&>(MovableObject);
+	}
+
+	template<typename MovableType>
+	auto Swap(MovableType &MovableObjectA, MovableType &MovableObjectB) {
+		auto TemporaryObject = Move(MovableObjectA);
+		MovableObjectA = Move(MovableObjectB);
+		MovableObjectB = Move(TemporaryObject);
 	}
 }

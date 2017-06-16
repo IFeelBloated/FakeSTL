@@ -37,7 +37,7 @@ namespace StandardTemplateLibrary::Extras {
 			return *this;
 		}
 		Graph(Graph &&OtherGraph) {
-			*this = static_cast<Graph &&>(OtherGraph);
+			*this = Move(OtherGraph);
 		}
 		Graph(const Graph &OtherGraph) {
 			*this = OtherGraph;

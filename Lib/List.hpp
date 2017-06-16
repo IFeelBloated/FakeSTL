@@ -14,7 +14,7 @@ namespace StandardTemplateLibrary {
 				ElementPointer = new GenericType{ SomeElement };
 			}
 			ListNode(GenericType &&SomeElement) {
-				ElementPointer = new GenericType{ static_cast<GenericType &&>(SomeElement) };
+				ElementPointer = new GenericType{ Move(SomeElement) };
 			}
 			ListNode(const ListNode &) = delete;
 			ListNode(ListNode &&) = delete;
@@ -110,7 +110,7 @@ namespace StandardTemplateLibrary {
 				*this += x;
 		}
 		List(List &&OtherList) :List{} {
-			*this = static_cast<List &&>(OtherList);
+			*this = Move(OtherList);
 		}
 		List(const List &OtherList) :List{} {
 			*this = OtherList;
@@ -138,27 +138,27 @@ namespace StandardTemplateLibrary {
 			Insert(begin(), SomeElement);
 		}
 		auto PushFront(GenericType &&SomeElement) {
-			Insert(begin(), static_cast<GenericType &&>(SomeElement));
+			Insert(begin(), Move(SomeElement));
 		}
 		auto PushBack(const GenericType &SomeElement) {
 			*this += SomeElement;
 		}
 		auto PushBack(GenericType &&SomeElement) {
-			*this += static_cast<GenericType &&>(SomeElement);
+			*this += Move(SomeElement);
 		}
 		auto &operator+=(const GenericType &SomeElement) {
 			Insert(end(), SomeElement);
 			return *this;
 		}
 		auto &operator+=(GenericType &&SomeElement) {
-			Insert(end(), static_cast<GenericType &&>(SomeElement));
+			Insert(end(), Move(SomeElement));
 			return *this;
 		}
 		auto Insert(ConstantIterator Position, const GenericType &SomeElement) {
 			return InsertConstructedNode(Position, new ListNode{ SomeElement });
 		}
 		auto Insert(ConstantIterator Position, GenericType &&SomeElement) {
-			return InsertConstructedNode(Position, new ListNode{ static_cast<GenericType &&>(SomeElement) });
+			return InsertConstructedNode(Position, new ListNode{ Move(SomeElement) });
 		}
 		auto PopFront() {
 			Erase(begin());
@@ -226,7 +226,7 @@ namespace StandardTemplateLibrary {
 			if (this != &OtherList) {
 				MergeInOrder();
 				ListCleanup();
-				*this = static_cast<List &&>(TemporaryList);
+				*this = Move(TemporaryList);
 			}
 		}
 		auto Merge(List &&OtherList) {
@@ -263,7 +263,7 @@ namespace StandardTemplateLibrary {
 				Initialize();
 				while (ListOfPulverizedLists.Size() > 1)
 					MergeSort();
-				*this = static_cast<List &&>(*ListOfPulverizedLists.begin());
+				*this = Move(*ListOfPulverizedLists.begin());
 			}
 		}
 		auto Reverse() {
@@ -278,7 +278,7 @@ namespace StandardTemplateLibrary {
 			if (Length > 1) {
 				while (!Empty())
 					ShiftTheLastNodeToTemporaryList();
-				*this = static_cast<List &&>(TemporaryList);
+				*this = Move(TemporaryList);
 			}
 		}
 	};

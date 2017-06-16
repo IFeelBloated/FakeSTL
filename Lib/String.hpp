@@ -45,7 +45,7 @@ namespace StandardTemplateLibrary {
 			*this = OtherBasicString;
 		}
 		BasicString(BasicString &&OtherBasicString) {
-			*this = static_cast<BasicString &&>(OtherBasicString);
+			*this = Move(OtherBasicString);
 		}
 		auto &operator=(const BasicString &OtherBasicString) {
 			if (this != &OtherBasicString) {

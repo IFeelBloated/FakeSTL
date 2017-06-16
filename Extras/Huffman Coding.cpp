@@ -18,11 +18,11 @@ namespace StandardTemplateLibrary::Extras {
 				this->Weight = Weight;
 			}
 			HuffmanTreeNode(GenericType &&SomeElement, double Weight) {
-				this->ElementPointer = new GenericType{ static_cast<GenericType &&>(SomeElement) };
+				this->ElementPointer = new GenericType{ Move(SomeElement) };
 				this->Weight = Weight;
 			}
 			HuffmanTreeNode(HuffmanTreeNode &&OtherHuffmanTreeNode) {
-				*this = static_cast<HuffmanTreeNode &&>(OtherHuffmanTreeNode);
+				*this = Move(OtherHuffmanTreeNode);
 			}
 			HuffmanTreeNode(const HuffmanTreeNode &OtherHuffmanTreeNode) {
 				*this = OtherHuffmanTreeNode;
@@ -78,7 +78,7 @@ namespace StandardTemplateLibrary::Extras {
 			static constexpr auto AnchorBit = 1_uint64;
 			CodingUnit() = default;
 			CodingUnit(GenericType &&SomeElement, std::uint64_t SomeCode) {
-				Element = static_cast<GenericType &&>(SomeElement);
+				Element = Move(SomeElement);
 				Code = SomeCode;
 			}
 			CodingUnit(const GenericType &SomeElement, std::uint64_t SomeCode) {
@@ -86,12 +86,12 @@ namespace StandardTemplateLibrary::Extras {
 				Code = SomeCode;
 			}
 			CodingUnit(CodingUnit &&OtherCodingUnit) {
-				*this = static_cast<CodingUnit &&>(OtherCodingUnit);
+				*this = Move(OtherCodingUnit);
 			}
 			CodingUnit(const CodingUnit &) = default;
 			auto &operator=(CodingUnit &&OtherCodingUnit) {
 				if (this != &OtherCodingUnit) {
-					Element = static_cast<GenericType &&>(OtherCodingUnit.Element);
+					Element = Move(OtherCodingUnit.Element);
 					Code = OtherCodingUnit.Code;
 				}
 				return *this;
@@ -121,7 +121,7 @@ namespace StandardTemplateLibrary::Extras {
 		HuffmanTreeNode *Root = nullptr;
 		auto TagEachNodeRecursively(HuffmanTreeNode *NodeCursor, std::uint64_t ConstructedCode, CodingUnitContainer &CodingResult)->void {
 			auto CompleteTagging = [&]() {
-				CodingResult += { static_cast<GenericType &&>(*NodeCursor->ElementPointer), ConstructedCode };
+				CodingResult += { Move(*NodeCursor->ElementPointer), ConstructedCode };
 			};
 			auto KeepOnTagging = [&]() {
 				auto TagLeftChild = [](auto PartialCode) {
@@ -147,8 +147,8 @@ namespace StandardTemplateLibrary::Extras {
 			using Container = List<HuffmanTreeNode>;
 			auto ListOfConstructedNodes = Container{ Initialization };
 			auto Unite2NodesOfLowestWeightAsOne = [&]() {
-				auto NodeOfLowestWeight = new HuffmanTreeNode{ static_cast<HuffmanTreeNode &&>(*ListOfConstructedNodes.begin()) };
-				auto NodeOf2ndLowestWeight = new HuffmanTreeNode{ static_cast<HuffmanTreeNode &&>(*++ListOfConstructedNodes.begin()) };
+				auto NodeOfLowestWeight = new HuffmanTreeNode{ Move(*ListOfConstructedNodes.begin()) };
+				auto NodeOf2ndLowestWeight = new HuffmanTreeNode{ Move(*++ListOfConstructedNodes.begin()) };
 				auto UnitedNode = HuffmanTreeNode{};
 				auto ConstructTheUnitedNode = [&]() {
 					UnitedNode.LeftChild = NodeOfLowestWeight;
@@ -161,7 +161,7 @@ namespace StandardTemplateLibrary::Extras {
 					auto Cursor = ListOfConstructedNodes.begin();
 					while (Cursor != ListOfConstructedNodes.end() && Cursor->Weight < UnitedNode.Weight)
 						++Cursor;
-					ListOfConstructedNodes.Insert(Cursor, static_cast<HuffmanTreeNode &&>(UnitedNode));
+					ListOfConstructedNodes.Insert(Cursor, Move(UnitedNode));
 				};
 				ConstructTheUnitedNode();
 				InsertTheUnitedNodeBackToList();
@@ -169,10 +169,10 @@ namespace StandardTemplateLibrary::Extras {
 			ListOfConstructedNodes.Sort();
 			while (ListOfConstructedNodes.Size() > 1)
 				Unite2NodesOfLowestWeightAsOne();
-			*Root = static_cast<HuffmanTreeNode &&>(*ListOfConstructedNodes.begin());
+			*Root = Move(*ListOfConstructedNodes.begin());
 		}
 		HuffmanTree(HuffmanTree &&OtherHuffmanTree) {
-			*this = static_cast<HuffmanTree &&>(OtherHuffmanTree);
+			*this = Move(OtherHuffmanTree);
 		}
 		HuffmanTree(const HuffmanTree &OtherHuffmanTree) :HuffmanTree{} {
 			*this = OtherHuffmanTree;
