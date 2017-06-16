@@ -80,6 +80,15 @@ namespace StandardTemplateLibrary {
 	};
 
 	template<typename GenericType>
+	using RemoveReference_t = typename RemoveReference<GenericType>::Type;
+
+	template<typename GenericType>
+	using RemoveConst_t = typename RemoveConst<GenericType>::Type;
+
+	template<typename GenericType>
+	using RemoveVolatile_t = typename RemoveVolatile<GenericType>::Type;
+
+	template<typename GenericType>
 	struct RemoveCV final {
 		using Type = RemoveVolatile_t<RemoveConst_t<GenericType>>;
 		RemoveCV() = delete;
@@ -89,15 +98,6 @@ namespace StandardTemplateLibrary {
 		auto &operator=(const RemoveCV &) = delete;
 		~RemoveCV() = delete;
 	};
-
-	template<typename GenericType>
-	using RemoveReference_t = typename RemoveReference<GenericType>::Type;
-
-	template<typename GenericType>
-	using RemoveConst_t = typename RemoveConst<GenericType>::Type;
-
-	template<typename GenericType>
-	using RemoveVolatile_t = typename RemoveVolatile<GenericType>::Type;
 
 	template<typename GenericType>
 	using RemoveCV_t = typename RemoveCV<GenericType>::Type;
