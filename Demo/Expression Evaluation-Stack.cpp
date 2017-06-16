@@ -3,30 +3,12 @@
 #include "List.hpp"
 
 struct ExpressionNode final {
-private:
-	union DataSet final {
-		decltype(0.) Operand = 0.;
-		decltype('0') Operator;
-		DataSet() = default;
-		DataSet(double Operand) {
-			this->Operand = Operand;
-		}
-		DataSet(char Operator) {
-			this->Operator = Operator;
-		}
-		DataSet(const DataSet &) = default;
-		DataSet(DataSet &&) = default;
-		auto operator=(const DataSet &)->decltype(*this) = default;
-		auto operator=(DataSet &&)->decltype(*this) = default;
-		~DataSet() = default;
-	};
-public:
-	DataSet DataUnion = {};
-	decltype(0) Precedence = 0;
-	decltype(false) IsOperator = false;
+	decltype(0.) Operand = 0.;
+	decltype('#') Operator = '#';
+	decltype(0ull) Precedence = 0;
 	ExpressionNode() = default;
 	ExpressionNode(double Operand) {
-		DataUnion = Operand;
+		this->Operand = Operand;
 	}
 	ExpressionNode(char Operator) {
 		auto GetPrecedence = [&]() {
@@ -39,26 +21,28 @@ public:
 				return 0;
 			}
 		};
-		DataUnion = Operator;
-		IsOperator = true;
-		Precedence = GetPrecedence();
+		this->Operator = Operator;
+		this->Precedence = GetPrecedence();
 	}
 	ExpressionNode(const ExpressionNode &) = default;
 	ExpressionNode(ExpressionNode &&) = default;
 	auto operator=(const ExpressionNode &)->decltype(*this) = default;
 	auto operator=(ExpressionNode &&)->decltype(*this) = default;
 	~ExpressionNode() = default;
+	auto IsOperator() const {
+		return Operator != '#';
+	}
 	auto operator==(char Operator) const {
-		return IsOperator && DataUnion.Operator == Operator;
+		return this->Operator == Operator;
 	}
 	auto operator!=(char Operator) const {
-		return !(*this == Operator);
+		return this->Operator != Operator;
 	}
 	friend auto &operator<<(std::ostream &Output, const ExpressionNode &SomeExpressionNode) {
-		if (SomeExpressionNode.IsOperator)
-			Output << SomeExpressionNode.DataUnion.Operator;
+		if (SomeExpressionNode.IsOperator() == true)
+			Output << SomeExpressionNode.Operator;
 		else
-			Output << SomeExpressionNode.DataUnion.Operand;
+			Output << SomeExpressionNode.Operand;
 		return Output;
 	}
 };
@@ -99,15 +83,15 @@ auto main()->int {
 				PopToRPNExpression();
 		};
 		for (auto &x : InfixExpression)
-			if (x.IsOperator)
+			if (x.IsOperator() == true)
 				OperatorToRPNExpression(x);
 			else
 				OperandToRPNExpression(x);
 		StackCleanup();
 	};
 	auto EvaluateRPNExpression = [&]() {
-		using ExpressionStack = StandardTemplateLibrary::Stack<decltype(0.), StandardTemplateLibrary::List<decltype(0.)>>;
-		auto OperandStack = ExpressionStack{};
+		using EvaluatingStack = StandardTemplateLibrary::Stack<decltype(0.), StandardTemplateLibrary::List<decltype(0.)>>;
+		auto OperandStack = EvaluatingStack{};
 		auto Evaluate = [&](auto Operator) {
 			auto TakeAction = [&](auto &&Action) {
 				auto RightHandOperand = OperandStack.Top();
@@ -140,10 +124,10 @@ auto main()->int {
 			}
 		};
 		for (auto &x : RPNExpression)
-			if (!x.IsOperator)
-				OperandStack += x.DataUnion.Operand;
+			if (x.IsOperator() == false)
+				OperandStack += x.Operand;
 			else
-				Evaluate(x.DataUnion.Operator);
+				Evaluate(x.Operator);
 		return OperandStack.Top();
 	};
 	auto PrintExpression = [](auto &Expression) {
