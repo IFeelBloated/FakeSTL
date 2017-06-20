@@ -72,16 +72,16 @@ namespace StandardTemplateLibrary {
 		auto Empty() const {
 			return Length == 0;
 		}
-		auto begin() {
+		auto Begin() {
 			return Iterator{ StringPointer };
 		}
-		auto begin() const {
+		auto Begin() const {
 			return ConstantIterator{ StringPointer };
 		}
-		auto end() {
+		auto End() {
 			return Iterator{ StringPointer + Length };
 		}
-		auto end() const {
+		auto End() const {
 			return ConstantIterator{ StringPointer + Length };
 		}
 		auto Size() const {

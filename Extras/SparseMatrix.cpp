@@ -30,8 +30,8 @@ namespace StandardTemplateLibrary::Extras {
 		SparseVector(std::initializer_list<decltype(0.)> Initialization) :SparseVector{} {
 			auto Cursor = 0_size;
 			auto Compress = [this]() {
-				auto Cursor = ContainerPointer->begin();
-				while (Cursor != ContainerPointer->end())
+				auto Cursor = ContainerPointer->Begin();
+				while (Cursor != ContainerPointer->End())
 					if (Cursor->Value == 0.)
 						Cursor = ContainerPointer->Erase(Cursor);
 					else
@@ -73,19 +73,19 @@ namespace StandardTemplateLibrary::Extras {
 		auto Size() const {
 			return Dimension;
 		}
-		auto begin() {
-			return ContainerPointer->begin();
+		auto Begin() {
+			return ContainerPointer->Begin();
 		}
-		auto begin() const {
+		auto Begin() const {
 			auto ConstantContainerPointer = const_cast<const Container *>(ContainerPointer);
-			return ConstantContainerPointer->begin();
+			return ConstantContainerPointer->Begin();
 		}
-		auto end() {
-			return ContainerPointer->end();
+		auto End() {
+			return ContainerPointer->End();
 		}
-		auto end() const {
+		auto End() const {
 			auto ConstantContainerPointer = const_cast<const Container *>(ContainerPointer);
-			return ConstantContainerPointer->end();
+			return ConstantContainerPointer->End();
 		}
 		static auto NullVector(std::size_t Dimension) {
 			auto Vector = SparseVector{};
@@ -102,14 +102,14 @@ namespace StandardTemplateLibrary::Extras {
 		}
 		auto &operator+=(const SparseVector &RightHandSideVector) {
 			auto Result = NullVector(Dimension);
-			auto LeftHandSideCursor = begin();
-			auto RightHandSideCursor = RightHandSideVector.begin();
+			auto LeftHandSideCursor = Begin();
+			auto RightHandSideCursor = RightHandSideVector.Begin();
 			auto &ResultContainer = *Result.ContainerPointer;
 			auto LeftHandSideVectorAlreadyTraversed = [&]() {
-				return LeftHandSideCursor == end();
+				return LeftHandSideCursor == End();
 			};
 			auto RightHandSideVectorAlreadyTraversed = [&]() {
-				return RightHandSideCursor == RightHandSideVector.end();
+				return RightHandSideCursor == RightHandSideVector.End();
 			};
 			auto ShiftTheLeftHandSideElementToResult = [&] {
 				ResultContainer += *LeftHandSideCursor;
@@ -159,12 +159,12 @@ namespace StandardTemplateLibrary::Extras {
 			return SparseVector{ SomeVector } *= Value;
 		}
 		friend auto &operator<<(std::ostream &Output, const SparseVector &SomeVector) {
-			auto Cursor = SomeVector.begin();
+			auto Cursor = SomeVector.Begin();
 			auto PrintRealNumberInFormat = [&](auto Value) {
 				Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << Value << " ";
 			};
 			for (auto Position = 0_size; Position < SomeVector.Dimension; ++Position)
-				if (Cursor != SomeVector.ContainerPointer->end() && Cursor->Index == Position) {
+				if (Cursor != SomeVector.ContainerPointer->End() && Cursor->Index == Position) {
 					PrintRealNumberInFormat(Cursor->Value);
 					++Cursor;
 				}
@@ -212,8 +212,8 @@ namespace StandardTemplateLibrary::Extras {
 		SparseMatrix(std::initializer_list<SparseVector> Initialization) :SparseMatrix{} {
 			auto Cursor = 0_size;
 			auto Compress = [this]() {
-				auto Cursor = ContainerPointer->begin();
-				while (Cursor != ContainerPointer->end())
+				auto Cursor = ContainerPointer->Begin();
+				while (Cursor != ContainerPointer->End())
 					if (Cursor->Vector.Empty())
 						Cursor = ContainerPointer->Erase(Cursor);
 					else
@@ -223,7 +223,7 @@ namespace StandardTemplateLibrary::Extras {
 				*ContainerPointer += {x, Cursor};
 				++Cursor;
 			}
-			Column = ContainerPointer->begin()->Vector.Size();
+			Column = ContainerPointer->Begin()->Vector.Size();
 			Row = ContainerPointer->Size();
 			Compress();
 		}
@@ -264,13 +264,13 @@ namespace StandardTemplateLibrary::Extras {
 			auto &ResultContainer = *Result.ContainerPointer;
 			auto &LeftHandSideMatrixContainer = *ContainerPointer;
 			auto InitializeRowTable = [&]() {
-				auto Cursor = RightHandSideMatrix.ContainerPointer->begin();
+				auto Cursor = RightHandSideMatrix.ContainerPointer->Begin();
 				auto RecordAndMoveOn = [&](auto Position) {
 					auto GetNext = [](auto Iterator) {
 						return ++Iterator;
 					};
 					RightHandSideMatrixRowTable[Position] = &Cursor->Vector;
-					if (GetNext(Cursor) != RightHandSideMatrix.ContainerPointer->end())
+					if (GetNext(Cursor) != RightHandSideMatrix.ContainerPointer->End())
 						++Cursor;
 				};
 				for (auto Position = 0_size; Position < RightHandSideMatrix.Row; ++Position)
@@ -304,14 +304,14 @@ namespace StandardTemplateLibrary::Extras {
 			return MatrixA *= MatrixB;
 		}
 		friend auto &operator<<(std::ostream &Output, const SparseMatrix &SomeMatrix) {
-			auto Cursor = SomeMatrix.ContainerPointer->begin();
+			auto Cursor = SomeMatrix.ContainerPointer->Begin();
 			auto PrintNullVector = [&]() {
 				for (auto Position = 0_size; Position < SomeMatrix.Column; ++Position)
 					Output << std::setiosflags(std::ios::fixed) << std::setprecision(3) << 0. << " ";
 				Output << std::endl;
 			};
 			for (auto Position = 0_size; Position < SomeMatrix.Row; ++Position)
-				if (Cursor != SomeMatrix.ContainerPointer->end() && Cursor->Index == Position) {
+				if (Cursor != SomeMatrix.ContainerPointer->End() && Cursor->Index == Position) {
 					Output << Cursor->Vector << std::endl;
 					++Cursor;
 				}

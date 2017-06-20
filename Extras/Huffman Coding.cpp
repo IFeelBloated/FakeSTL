@@ -130,8 +130,8 @@ namespace StandardTemplateLibrary::Extras {
 			using Container = List<HuffmanTreeNode>;
 			auto ListOfConstructedNodes = Container{ Initialization };
 			auto Unite2NodesOfLowestWeightAsOne = [&]() {
-				auto NodeOfLowestWeight = new HuffmanTreeNode{ Move(*ListOfConstructedNodes.begin()) };
-				auto NodeOf2ndLowestWeight = new HuffmanTreeNode{ Move(*++ListOfConstructedNodes.begin()) };
+				auto NodeOfLowestWeight = new HuffmanTreeNode{ Move(*ListOfConstructedNodes.Begin()) };
+				auto NodeOf2ndLowestWeight = new HuffmanTreeNode{ Move(*++ListOfConstructedNodes.Begin()) };
 				auto UnitedNode = HuffmanTreeNode{};
 				auto ConstructTheUnitedNode = [&]() {
 					UnitedNode.LeftChild = NodeOfLowestWeight;
@@ -141,8 +141,8 @@ namespace StandardTemplateLibrary::Extras {
 				auto InsertTheUnitedNodeBackToList = [&]() {
 					ListOfConstructedNodes.PopFront();
 					ListOfConstructedNodes.PopFront();
-					auto Cursor = ListOfConstructedNodes.begin();
-					while (Cursor != ListOfConstructedNodes.end() && Cursor->Weight < UnitedNode.Weight)
+					auto Cursor = ListOfConstructedNodes.Begin();
+					while (Cursor != ListOfConstructedNodes.End() && Cursor->Weight < UnitedNode.Weight)
 						++Cursor;
 					ListOfConstructedNodes.Insert(Cursor, Move(UnitedNode));
 				};
@@ -152,7 +152,7 @@ namespace StandardTemplateLibrary::Extras {
 			ListOfConstructedNodes.Sort();
 			while (ListOfConstructedNodes.Size() > 1)
 				Unite2NodesOfLowestWeightAsOne();
-			*Root = Move(*ListOfConstructedNodes.begin());
+			*Root = Move(*ListOfConstructedNodes.Begin());
 		}
 		HuffmanTree(HuffmanTree &&OtherHuffmanTree) {
 			*this = Move(OtherHuffmanTree);

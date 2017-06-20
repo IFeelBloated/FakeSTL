@@ -229,7 +229,7 @@ namespace StandardTemplateLibrary {
 					Cursor = Cursor->LeftChild;
 				else
 					Cursor = Cursor->RightChild;
-			return end();
+			return End();
 		}
 		auto Erase(ConstantIterator Position) {
 			auto GetNext = [](auto Iterator) {
@@ -292,7 +292,7 @@ namespace StandardTemplateLibrary {
 			this->~Set();
 			new(this) Set{};
 		}
-		auto begin() const {
+		auto Begin() const {
 			auto GoToTheLeftmostNode = [this]() {
 				auto Cursor = Head;
 				while (Cursor->LeftChild != nullptr)
@@ -301,7 +301,7 @@ namespace StandardTemplateLibrary {
 			};
 			return ConstantIterator{ GoToTheLeftmostNode() };
 		}
-		auto end() const {
+		auto End() const {
 			return ConstantIterator{ Head };
 		}
 		auto Size() const {

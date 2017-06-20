@@ -32,11 +32,11 @@ auto main()->int {
 	auto SimplifyPolynomial = [](auto &Expression) {
 		auto CombineLikeTerms = [&]() {
 			auto Combine = [&]() {
-				auto Cursor = Expression.begin();
+				auto Cursor = Expression.Begin();
 				auto GetNext = [](auto Iterator) {
 					return ++Iterator;
 				};
-				while (GetNext(Cursor) != Expression.end())
+				while (GetNext(Cursor) != Expression.End())
 					if (Cursor->Degree == GetNext(Cursor)->Degree) {
 						Cursor->Coefficient += GetNext(Cursor)->Coefficient;
 						Expression.Erase(GetNext(Cursor));
@@ -48,8 +48,8 @@ auto main()->int {
 			Combine();
 		};
 		auto Cleanup = [&]() {
-			auto Cursor = Expression.begin();
-			while (Cursor != Expression.end())
+			auto Cursor = Expression.Begin();
+			while (Cursor != Expression.End())
 				if (Cursor->Coefficient == 0.)
 					Cursor = Expression.Erase(Cursor);
 				else
@@ -68,7 +68,7 @@ auto main()->int {
 		return Result;
 	};
 	auto PrintPolynomial = [](auto &&Expression) {
-		auto &LastPolynomialTerm = *--Expression.end();
+		auto &LastPolynomialTerm = *--Expression.End();
 		auto PrintCoefficient = [](auto &Value) {
 			if (Value.Coefficient != 1.)
 				std::cout << Value.Coefficient;

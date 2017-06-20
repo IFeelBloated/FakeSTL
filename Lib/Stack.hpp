@@ -35,10 +35,10 @@ namespace StandardTemplateLibrary {
 			delete ContainerPointer;
 		}
 		auto &Top() {
-			return *--ContainerPointer->end();
+			return *--ContainerPointer->End();
 		}
 		const auto &Top() const {
-			return *--ContainerPointer->end();
+			return *--ContainerPointer->End();
 		}
 		auto &operator+=(GenericType &&SomeElement) {
 			ContainerPointer->PushBack(Move(SomeElement));

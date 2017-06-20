@@ -136,10 +136,10 @@ namespace StandardTemplateLibrary {
 			delete Head;
 		}
 		auto PushFront(const GenericType &SomeElement) {
-			Insert(begin(), SomeElement);
+			Insert(Begin(), SomeElement);
 		}
 		auto PushFront(GenericType &&SomeElement) {
-			Insert(begin(), Move(SomeElement));
+			Insert(Begin(), Move(SomeElement));
 		}
 		auto PushBack(const GenericType &SomeElement) {
 			*this += SomeElement;
@@ -148,11 +148,11 @@ namespace StandardTemplateLibrary {
 			*this += Move(SomeElement);
 		}
 		auto &operator+=(const GenericType &SomeElement) {
-			Insert(end(), SomeElement);
+			Insert(End(), SomeElement);
 			return *this;
 		}
 		auto &operator+=(GenericType &&SomeElement) {
-			Insert(end(), Move(SomeElement));
+			Insert(End(), Move(SomeElement));
 			return *this;
 		}
 		auto Insert(ConstantIterator Position, const GenericType &SomeElement) {
@@ -162,13 +162,13 @@ namespace StandardTemplateLibrary {
 			return InsertConstructedNode(Position, new ListNode{ Move(SomeElement) });
 		}
 		auto PopFront() {
-			Erase(begin());
+			Erase(Begin());
 		}
 		auto PopBack() {
 			--*this;
 		}
 		auto &operator--() {
-			Erase(--end());
+			Erase(--End());
 			return *this;
 		}
 		auto Erase(ConstantIterator Position) {
@@ -180,20 +180,20 @@ namespace StandardTemplateLibrary {
 			return Iterator{ NodeNextToTheErasedNode };
 		}
 		auto Clear() {
-			auto Cursor = begin();
-			while (Cursor != end())
+			auto Cursor = Begin();
+			while (Cursor != End())
 				Cursor = Erase(Cursor);
 		}
-		auto begin() {
+		auto Begin() {
 			return Iterator{ Head->Next };
 		}
-		auto begin() const {
+		auto Begin() const {
 			return ConstantIterator{ Head->Next };
 		}
-		auto end() {
+		auto End() {
 			return Iterator{ Head };
 		}
-		auto end() const {
+		auto End() const {
 			return ConstantIterator{ Head };
 		}
 		auto Size() const {
@@ -209,11 +209,11 @@ namespace StandardTemplateLibrary {
 				SourceList.Head->Next = FirstNode->Next;
 				FirstNode->Next->Previous = SourceList.Head;
 				--SourceList.Length;
-				TemporaryList.InsertConstructedNode(TemporaryList.end(), FirstNode);
+				TemporaryList.InsertConstructedNode(TemporaryList.End(), FirstNode);
 			};
 			auto MergeInOrder = [&]() {
 				while (!this->Empty() && !OtherList.Empty())
-					if (*this->begin() < *OtherList.begin())
+					if (*this->Begin() < *OtherList.Begin())
 						ShiftTheFirstNodeToTemporaryList(*this);
 					else
 						ShiftTheFirstNodeToTemporaryList(OtherList);
@@ -242,15 +242,15 @@ namespace StandardTemplateLibrary {
 					Head->Next = FirstNode->Next;
 					FirstNode->Next->Previous = Head;
 					--Length;
-					TemporaryList.InsertConstructedNode(TemporaryList.end(), FirstNode);
+					TemporaryList.InsertConstructedNode(TemporaryList.End(), FirstNode);
 					return TemporaryList;
 				};
 				while (!Empty())
 					ListOfPulverizedLists += WrapTheFirstNodeAsList();
 			};
 			auto MergeSort = [&]() {
-				auto Cursor = ListOfPulverizedLists.begin();
-				auto EndPosition = ListOfPulverizedLists.Size() % 2 == 0 ? ListOfPulverizedLists.end() : --ListOfPulverizedLists.end();
+				auto Cursor = ListOfPulverizedLists.Begin();
+				auto EndPosition = ListOfPulverizedLists.Size() % 2 == 0 ? ListOfPulverizedLists.End() : --ListOfPulverizedLists.End();
 				auto GetNext = [](auto Iterator) {
 					return ++Iterator;
 				};
@@ -264,7 +264,7 @@ namespace StandardTemplateLibrary {
 				Initialize();
 				while (ListOfPulverizedLists.Size() > 1)
 					MergeSort();
-				*this = Move(*ListOfPulverizedLists.begin());
+				*this = Move(*ListOfPulverizedLists.Begin());
 			}
 		}
 		auto Reverse() {
@@ -274,7 +274,7 @@ namespace StandardTemplateLibrary {
 				LastNode->Previous->Next = Head;
 				Head->Previous = LastNode->Previous;
 				--Length;
-				TemporaryList.InsertConstructedNode(TemporaryList.end(), LastNode);
+				TemporaryList.InsertConstructedNode(TemporaryList.End(), LastNode);
 			};
 			if (Length > 1) {
 				while (!Empty())
